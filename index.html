@@ -151,6 +151,31 @@
         var alphaValue = 'A';
         var takeValue = 1;
 
+        // Function to load saved values from localStorage
+        function loadSavedValues() {
+            var savedNumericValue = localStorage.getItem('numericValue');
+            if (savedNumericValue) {
+                numericValue = parseInt(savedNumericValue);
+            }
+            
+            var savedAlphaValue = localStorage.getItem('alphaValue');
+            if (savedAlphaValue) {
+                alphaValue = savedAlphaValue;
+            }
+            
+            var savedTakeValue = localStorage.getItem('takeValue');
+            if (savedTakeValue) {
+                takeValue = parseInt(savedTakeValue);
+            }
+        }
+
+        // Function to save current values to localStorage
+        function saveCurrentValues() {
+            localStorage.setItem('numericValue', numericValue);
+            localStorage.setItem('alphaValue', alphaValue);
+            localStorage.setItem('takeValue', takeValue);
+        }
+
         function updateCurrentDate() {
             var currentDateElement = document.getElementById('currentDate');
             var currentDate = new Date();
@@ -171,6 +196,7 @@
             numericValue++;
             takeValue = 1;
             updateSceneValue();
+            saveCurrentValues(); // Save values after each update
         }
 
         function decrementNumeric() {
@@ -178,6 +204,7 @@
                 numericValue--;
                 takeValue = 1;
                 updateSceneValue();
+                saveCurrentValues(); // Save values after each update
             }
         }
 
@@ -190,6 +217,7 @@
             alphaValue = String.fromCharCode(charCode);
             takeValue = 1;
             updateSceneValue();
+            saveCurrentValues(); // Save values after each update
         }
 
         function decrementAlpha() {
@@ -201,17 +229,20 @@
             alphaValue = String.fromCharCode(charCode);
             takeValue = 1;
             updateSceneValue();
+            saveCurrentValues(); // Save values after each update
         }
 
         function incrementTake() {
             takeValue++;
             document.getElementById('takeValue').textContent = takeValue;
+            saveCurrentValues(); // Save values after each update
         }
 
         function decrementTake() {
             if (takeValue > 1) {
                 takeValue--;
                 document.getElementById('takeValue').textContent = takeValue;
+                saveCurrentValues(); // Save values after each update
             }
         }
 
@@ -219,6 +250,7 @@
             document.getElementById('sceneValue').textContent = numericValue + alphaValue;
             takeValue = 1;
             document.getElementById('takeValue').textContent = takeValue;
+            saveCurrentValues(); // Save values after each update
         }
 
         function toggleFullscreen() {
@@ -247,6 +279,10 @@
             }
         }
 
+        // Load saved values when the page loads
+        loadSavedValues();
+
+        // Update current date immediately and every second
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);
     </script>

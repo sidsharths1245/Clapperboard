@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- Google Material Icons -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        padding: 20px;
+        margin: 0;
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .input-group {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 18px;
+        width: 80px;
+    }
+
+    .input-box {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-right: 20px;
+        flex: 1; /* Allow flexibility in width */
+    }
+
+    .numeric-buttons,
+    .alpha-buttons {
+        display: flex;
+        flex-direction: column;
+        margin-left: 10px;
+    }
+
+    .numeric-buttons button,
+    .alpha-buttons button {
+        width: 30px;
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 5px;
+    }
+
+    .input-group button:hover {
+        background-color: #f0f0f0;
+    }
+
+    #sceneValue,
+    #takeValue {
+        font-size: 120px;
+        font-weight: bold;
+    }
+
+    #currentDate {
+        font-size: 20px;
+        text-align: left;
+        margin-top: 20px;
+        white-space: nowrap;
+    }
+
+    .scene-take-group {
+        display: flex;
+        flex-wrap: wrap; /* Allow items to wrap */
+        gap: 10px; /* Gap between input-boxes */
+    }
+
+    #video {
+        margin-bottom: 10px;
+        padding: 10px 10px 10px 5px;
+        font-size: 20px;
+        border: none;
+        width: calc(100% - 30px); /* Adjust width to fit */
+        max-width: 400px; /* Set maximum width */
+    }
+
+    .fullscreen-button {
+        background-color: transparent; /* Transparent background */
+        color: #000; /* Black color for the icon */
+        border: none;
+        padding: 10px 0px; /* Adjust padding */
+        font-size: 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+        display: inline-block;
+        line-height: 0; /* Remove line-height to eliminate extra space */
+    }
+
+    .fullscreen-button .material-icons {
+        vertical-align: middle;
+    }
+</style>
+</head>
+<body>
+    <input type="text" id="video" placeholder="Enter video name">
+
+    <div class="scene-take-group">
+        <div class="input-box">
+            <div class="input-group">
+                <label for="scene">Scene:</label>
+                <div class="numeric-buttons">
+                    <button type="button" onclick="incrementNumeric()">+</button>
+                    <button type="button" onclick="decrementNumeric()">-</button>
+                </div>
+                <span id="sceneValue">1A</span>
+                <div class="alpha-buttons">
+                    <button type="button" onclick="incrementAlpha()">+</button>
+                    <button type="button" onclick="decrementAlpha()">-</button>
+                </div>
+            </div>
+        </div>
+        <div class="input-box">
+            <div class="input-group">
+                <label for="take">Take:</label>
+                <span id="takeValue">1</span>
+                <div class="numeric-buttons">
+                    <button type="button" onclick="incrementTake()">+</button>
+                    <button type="button" onclick="decrementTake()">-</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="currentDate"></div>
+
+    <button class="fullscreen-button" onclick="toggleFullscreen()">
+        <i class="material-icons">fullscreen</i>
+    </button>
+
+    <script>
+        var numericValue = 1;
+        var alphaValue = 'A';
+        var takeValue = 1;
+
+        function updateCurrentDate() {
+            var currentDateElement = document.getElementById('currentDate');
+            var currentDate = new Date();
+            
+            var year = currentDate.getFullYear();
+            var month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+            var day = ('0' + currentDate.getDate()).slice(-2);
+            var hours = ('0' + currentDate.getHours()).slice(-2);
+            var minutes = ('0' + currentDate.getMinutes()).slice(-2);
+            var seconds = ('0' + currentDate.getSeconds()).slice(-2);
+            
+            var formattedDate = `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+            
+            currentDateElement.textContent = formattedDate;
+        }
+
+        function incrementNumeric() {
+            numericValue++;
+            takeValue = 1;
+            updateSceneValue();
+        }
+
+        function decrementNumeric() {
+            if (numericValue > 1) {
+                numericValue--;
+                takeValue = 1;
+                updateSceneValue();
+            }
+        }
+
+        function incrementAlpha() {
+            var charCode = alphaValue.charCodeAt(0);
+            charCode++;
+            if (charCode > 90) {
+                charCode = 65;
+            }
+            alphaValue = String.fromCharCode(charCode);
+            takeValue = 1;
+            updateSceneValue();
+        }
+
+        function decrementAlpha() {
+            var charCode = alphaValue.charCodeAt(0);
+            charCode--;
+            if (charCode < 65) {
+                charCode = 90;
+            }
+            alphaValue = String.fromCharCode(charCode);
+            takeValue = 1;
+            updateSceneValue();
+        }
+
+        function incrementTake() {
+            takeValue++;
+            document.getElementById('takeValue').textContent = takeValue;
+        }
+
+        function decrementTake() {
+            if (takeValue > 1) {
+                takeValue--;
+                document.getElementById('takeValue').textContent = takeValue;
+            }
+        }
+
+        function updateSceneValue() {
+            document.getElementById('sceneValue').textContent = numericValue + alphaValue;
+            takeValue = 1;
+            document.getElementById('takeValue').textContent = takeValue;
+        }
+
+        function toggleFullscreen() {
+            var elem = document.documentElement; // Fullscreen the whole document
+            if (!document.fullscreenElement && !document.mozFullScreenElement &&
+                !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        updateCurrentDate();
+        setInterval(updateCurrentDate, 1000);
+    </script>
+</body>
+</html>

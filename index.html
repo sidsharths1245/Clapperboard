@@ -253,14 +253,8 @@
             }
         }
 
-        function handleDblClick(event) {
-            // Check if the double-click happened outside of buttons
-            if (!event.target.closest('button')) {
-                toggleFullscreen();
-            }
-        }
-
-        document.addEventListener('dblclick', handleDblClick); // Add double-click event listener
+        // Removed double-click event listener
+        // document.addEventListener('dblclick', handleDblClick); 
 
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);

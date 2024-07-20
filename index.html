@@ -100,22 +100,7 @@
         font-weight: bold; /* Make the text bold */
     }
 
-    .fullscreen-button {
-        background-color: transparent; /* Transparent background */
-        color: #000; /* Black color for the icon */
-        border: none;
-        padding: 10px 0px; /* Adjust padding */
-        font-size: 24px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 10px;
-        display: inline-block;
-        line-height: 0; /* Remove line-height to eliminate extra space */
-    }
-
-    .fullscreen-button .material-icons {
-        vertical-align: middle;
-    }
+    /* Removed .fullscreen-button styles */
 </style>
 </head>
 <body>
@@ -161,10 +146,6 @@
     </div>
 
     <div id="currentDate"></div>
-
-    <button class="fullscreen-button" onclick="toggleFullscreen()">
-        <i class="material-icons">fullscreen</i>
-    </button>
 
     <script>
         var numericValue = 1;
@@ -266,6 +247,8 @@
                 }
             }
         }
+
+        document.addEventListener('dblclick', toggleFullscreen); // Add double-click event listener
 
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);

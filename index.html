@@ -11,9 +11,6 @@
         padding: 20px;
         margin: 0;
         font-size: 20px;
-        display: flex;
-        flex-direction: column;
-        height: 100vh; /* Set height of the body to full viewport height */
     }
 
     .input-group {
@@ -22,7 +19,13 @@
         align-items: center;
         justify-content: center; /* Center align the content horizontally */
         text-align: center; /* Center align the text */
-        height: 100%; /* Make the input group take full height of its container */
+    }
+
+    .input-group label {
+        font-weight: bold;
+        font-size: 18px;
+        width: 80px;
+        text-align: center;
     }
 
     .input-box {
@@ -34,10 +37,10 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin: 20px;
+        margin-right: 20px;
+        margin-left: 20px;
         background-color: #f0f0f0; /* Optional: Add a background color to distinguish the blocks */
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow to give a block-like appearance */
-        height: calc(50vh - 40px); /* Adjust height as needed */
     }
 
     .numeric-buttons,
@@ -89,9 +92,7 @@
 
     .scene-take-group {
         display: flex;
-        flex-direction: row;
-        align-items: stretch; /* Ensure items stretch to fill the container */
-        height: 100%; /* Make the scene-take-group take full height of its container */
+        /* Removed gap property */
     }
 
     #video {

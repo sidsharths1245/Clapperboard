@@ -17,7 +17,8 @@
         margin-bottom: 20px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center; /* Center align the content horizontally */
+        text-align: center; /* Center align the text */
     }
 
     .input-group label {
@@ -29,14 +30,16 @@
 
     .input-box {
         padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        flex: 1; /* Allow flexibility in width */
+        border: none; /* Remove border */
+        border-radius: 0; /* Remove border radius */
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         margin-right: 20px;
+        background-color: #f0f0f0; /* Optional: Add a background color to distinguish the blocks */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow to give a block-like appearance */
     }
 
     .numeric-buttons,

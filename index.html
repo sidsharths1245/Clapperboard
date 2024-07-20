@@ -38,6 +38,7 @@
         align-items: center;
         justify-content: center;
         margin-right: 20px;
+        margin-left: 20px;
         background-color: #f0f0f0; /* Optional: Add a background color to distinguish the blocks */
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow to give a block-like appearance */
     }
@@ -170,7 +171,7 @@
             var minutes = ('0' + currentDate.getMinutes()).slice(-2);
             var seconds = ('0' + currentDate.getSeconds()).slice(-2);
             
-            var formattedDate = `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+            var formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
             
             currentDateElement.textContent = formattedDate;
         }

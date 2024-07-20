@@ -158,16 +158,22 @@
         function updateCurrentDate() {
             var currentDateElement = document.getElementById('currentDate');
             var currentDate = new Date();
-            
+
             var year = currentDate.getFullYear();
-            var month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
-            var day = ('0' + currentDate.getDate()).slice(-2);
+            var day = currentDate.getDate();
+            
+            // Array of abbreviated month names
+            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var month = monthNames[currentDate.getMonth()];
+
+            // Get hours, minutes, and seconds
             var hours = ('0' + currentDate.getHours()).slice(-2);
             var minutes = ('0' + currentDate.getMinutes()).slice(-2);
             var seconds = ('0' + currentDate.getSeconds()).slice(-2);
-            
-            var formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-            
+
+            var formattedDate = `${day} ${month} ${year} ${hours}:${minutes}:${seconds}`;
+
             currentDateElement.textContent = formattedDate;
         }
 

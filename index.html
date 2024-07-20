@@ -13,12 +13,6 @@
         font-size: 20px;
     }
 
-    h2 {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-
     .input-group {
         margin-bottom: 20px;
         display: flex;
@@ -27,37 +21,49 @@
     }
 
     .input-group label {
-        display: block;
-        margin-bottom: 5px;
         font-weight: bold;
         font-size: 18px;
         width: 80px;
+        text-align: center;
     }
 
     .input-box {
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
-        margin-right: 20px;
         flex: 1; /* Allow flexibility in width */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
     }
 
     .numeric-buttons,
     .alpha-buttons {
         display: flex;
         flex-direction: column;
-        margin-left: 10px;
+        align-items: center;
     }
 
     .numeric-buttons button,
     .alpha-buttons button {
-        width: 30px;
+        width: 30px; /* Adjusted width */
+        height: 30px; /* Adjusted height */
         padding: 8px;
         font-size: 14px;
         border: 1px solid #ccc;
-        border-radius: 4px;
+        border-radius: 50%; /* Make the buttons circular */
         cursor: pointer;
         margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .numeric-buttons button .material-icons,
+    .alpha-buttons button .material-icons {
+        font-size: 18px;
     }
 
     .input-group button:hover {
@@ -68,6 +74,8 @@
     #takeValue {
         font-size: 120px;
         font-weight: bold;
+        text-align: center;
+        padding: 0 20px; /* Increase padding on left and right */
     }
 
     #currentDate {
@@ -79,8 +87,7 @@
 
     .scene-take-group {
         display: flex;
-        flex-wrap: wrap; /* Allow items to wrap */
-        gap: 10px; /* Gap between input-boxes */
+        /* Removed gap property */
     }
 
     #video {
@@ -90,6 +97,7 @@
         border: none;
         width: calc(100% - 30px); /* Adjust width to fit */
         max-width: 400px; /* Set maximum width */
+        font-weight: bold; /* Make the text bold */
     }
 
     .fullscreen-button {
@@ -115,26 +123,38 @@
 
     <div class="scene-take-group">
         <div class="input-box">
+            <label for="scene">Scene</label>
             <div class="input-group">
-                <label for="scene">Scene:</label>
                 <div class="numeric-buttons">
-                    <button type="button" onclick="incrementNumeric()">+</button>
-                    <button type="button" onclick="decrementNumeric()">-</button>
+                    <button type="button" onclick="incrementNumeric()">
+                        <span class="material-icons">arrow_drop_up</span>
+                    </button>
+                    <button type="button" onclick="decrementNumeric()">
+                        <span class="material-icons">arrow_drop_down</span>
+                    </button>
                 </div>
                 <span id="sceneValue">1A</span>
                 <div class="alpha-buttons">
-                    <button type="button" onclick="incrementAlpha()">+</button>
-                    <button type="button" onclick="decrementAlpha()">-</button>
+                    <button type="button" onclick="incrementAlpha()">
+                        <span class="material-icons">arrow_drop_up</span>
+                    </button>
+                    <button type="button" onclick="decrementAlpha()">
+                        <span class="material-icons">arrow_drop_down</span>
+                    </button>
                 </div>
             </div>
         </div>
         <div class="input-box">
+            <label for="take">Take</label>
             <div class="input-group">
-                <label for="take">Take:</label>
                 <span id="takeValue">1</span>
                 <div class="numeric-buttons">
-                    <button type="button" onclick="incrementTake()">+</button>
-                    <button type="button" onclick="decrementTake()">-</button>
+                    <button type="button" onclick="incrementTake()">
+                        <span class="material-icons">arrow_drop_up</span>
+                    </button>
+                    <button type="button" onclick="decrementTake()">
+                        <span class="material-icons">arrow_drop_down</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -150,31 +170,6 @@
         var numericValue = 1;
         var alphaValue = 'A';
         var takeValue = 1;
-
-        // Function to load saved values from localStorage
-        function loadSavedValues() {
-            var savedNumericValue = localStorage.getItem('numericValue');
-            if (savedNumericValue) {
-                numericValue = parseInt(savedNumericValue);
-            }
-            
-            var savedAlphaValue = localStorage.getItem('alphaValue');
-            if (savedAlphaValue) {
-                alphaValue = savedAlphaValue;
-            }
-            
-            var savedTakeValue = localStorage.getItem('takeValue');
-            if (savedTakeValue) {
-                takeValue = parseInt(savedTakeValue);
-            }
-        }
-
-        // Function to save current values to localStorage
-        function saveCurrentValues() {
-            localStorage.setItem('numericValue', numericValue);
-            localStorage.setItem('alphaValue', alphaValue);
-            localStorage.setItem('takeValue', takeValue);
-        }
 
         function updateCurrentDate() {
             var currentDateElement = document.getElementById('currentDate');
@@ -196,7 +191,6 @@
             numericValue++;
             takeValue = 1;
             updateSceneValue();
-            saveCurrentValues(); // Save values after each update
         }
 
         function decrementNumeric() {
@@ -204,7 +198,6 @@
                 numericValue--;
                 takeValue = 1;
                 updateSceneValue();
-                saveCurrentValues(); // Save values after each update
             }
         }
 
@@ -217,7 +210,6 @@
             alphaValue = String.fromCharCode(charCode);
             takeValue = 1;
             updateSceneValue();
-            saveCurrentValues(); // Save values after each update
         }
 
         function decrementAlpha() {
@@ -229,20 +221,17 @@
             alphaValue = String.fromCharCode(charCode);
             takeValue = 1;
             updateSceneValue();
-            saveCurrentValues(); // Save values after each update
         }
 
         function incrementTake() {
             takeValue++;
             document.getElementById('takeValue').textContent = takeValue;
-            saveCurrentValues(); // Save values after each update
         }
 
         function decrementTake() {
             if (takeValue > 1) {
                 takeValue--;
                 document.getElementById('takeValue').textContent = takeValue;
-                saveCurrentValues(); // Save values after each update
             }
         }
 
@@ -250,7 +239,6 @@
             document.getElementById('sceneValue').textContent = numericValue + alphaValue;
             takeValue = 1;
             document.getElementById('takeValue').textContent = takeValue;
-            saveCurrentValues(); // Save values after each update
         }
 
         function toggleFullscreen() {
@@ -279,10 +267,6 @@
             }
         }
 
-        // Load saved values when the page loads
-        loadSavedValues();
-
-        // Update current date immediately and every second
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);
     </script>

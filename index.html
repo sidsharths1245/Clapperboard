@@ -11,6 +11,12 @@
         padding: 20px;
         margin: 0;
         font-size: 20px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+        background-color: #121212;
+        color: #ffffff;
     }
 
     .input-group {
@@ -45,6 +51,11 @@
         box-sizing: border-box; /* Ensure padding and border are included in height */
     }
 
+    body.dark-mode .input-box {
+        background-color: #333333;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
     .numeric-buttons,
     .alpha-buttons {
         display: flex;
@@ -69,6 +80,11 @@
         -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
     }
 
+    body.dark-mode .numeric-buttons button,
+    body.dark-mode .alpha-buttons button {
+        background-color: #6a48c1;
+    }
+
     .numeric-buttons button .material-icons,
     .alpha-buttons button .material-icons {
         font-size: 2.8vw; /* Responsive font size */
@@ -85,13 +101,18 @@
         -webkit-tap-highlight-color: transparent;
     }
 
+    .date-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding: 0 20px;
+    }
+
     #currentDate {
         font-size: 2.8vw; /* Responsive font size based on viewport width */
         font-weight: bold;
-        text-align: right;
-        margin-top: 20px;
         white-space: nowrap;
-        padding: 0 20px;
     }
 
     .scene-take-group {
@@ -107,6 +128,28 @@
         width: calc(100% - 30px); /* Adjust width to fit */
         max-width: 100%; /* Set maximum width */
         font-weight: bold; /* Make the text bold */
+    }
+    
+    body.dark-mode #video {
+        background-color: #121212;
+        color: #ffffff;
+    }
+
+    .custom-button {
+        font-size: 2.8vw; /* Responsive font size based on viewport width */
+        padding: 10px 10px;
+        background-color: #5f3dae;
+        color: #c1b5e3;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    body.dark-mode .custom-button {
+        background-color: #6a48c1;
     }
 </style>
 </head>
@@ -152,7 +195,12 @@
         </div>
     </div>
 
-    <div id="currentDate"></div>
+    <div class="date-container">
+        <button class="custom-button" id="darkModeToggle">
+            <span class="material-icons" id="darkModeIcon">brightness_4</span>
+        </button>
+        <div id="currentDate"></div>
+    </div>
 
     <script>
         var numericValue = 1;
@@ -246,6 +294,19 @@
             document.getElementById('takeValue').textContent = takeValue;
         }
 
+        function toggleDarkMode() {
+            var body = document.body;
+            var icon = document.getElementById('darkModeIcon');
+
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                icon.textContent = 'brightness_7'; // Sun icon for light mode
+            } else {
+                icon.textContent = 'brightness_4'; // Moon icon for dark mode
+            }
+        }
+
         var lastTouch = 0;
         var touchTimeout = 300; // Maximum time between taps to be considered a double-tap
 
@@ -269,6 +330,8 @@
         document.getElementById('takeValue').addEventListener('touchend', function(event) {
             handleTouchEvent(event, resetTakeValue);
         });
+
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
 
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);

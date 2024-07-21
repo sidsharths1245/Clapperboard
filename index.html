@@ -37,7 +37,7 @@
     .input-box {
         padding: 10px;
         border: none; /* Remove border */
-        border-radius: 0; /* Remove border radius */
+        border-radius: 15px; /* Rounded corners for the blocks */
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -150,7 +150,7 @@
     }
 
     body.dark-mode .custom-button {
-        color: 5f3dae; /* Icon color in dark mode */
+        color: #5f3dae; /* Icon color in dark mode */
     }
 </style>
 </head>
@@ -303,21 +303,8 @@
             
             if (body.classList.contains('dark-mode')) {
                 icon.textContent = 'brightness_7'; // Sun icon for light mode
-                localStorage.setItem('darkMode', 'enabled'); // Save dark mode preference
             } else {
                 icon.textContent = 'brightness_4'; // Moon icon for dark mode
-                localStorage.setItem('darkMode', 'disabled'); // Save light mode preference
-            }
-        }
-
-        function applySavedPreferences() {
-            var darkModePreference = localStorage.getItem('darkMode');
-            if (darkModePreference === 'enabled') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('darkModeIcon').textContent = 'brightness_7'; // Sun icon
-            } else {
-                document.body.classList.remove('dark-mode');
-                document.getElementById('darkModeIcon').textContent = 'brightness_4'; // Moon icon
             }
         }
 
@@ -346,9 +333,6 @@
         });
 
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-
-        // Apply saved preferences on page load
-        applySavedPreferences();
 
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);

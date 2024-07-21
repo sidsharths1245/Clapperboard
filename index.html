@@ -162,19 +162,19 @@
             <label for="scene">Scene</label>
             <div class="input-group">
                 <div class="numeric-buttons">
-                    <button type="button" id="sceneUp">
+                    <button type="button" onclick="incrementNumeric()">
                         <span class="material-icons">arrow_drop_up</span>
                     </button>
-                    <button type="button" id="sceneDown">
+                    <button type="button" onclick="decrementNumeric()">
                         <span class="material-icons">arrow_drop_down</span>
                     </button>
                 </div>
                 <span id="sceneValue">1A</span>
                 <div class="alpha-buttons">
-                    <button type="button" id="alphaUp">
+                    <button type="button" onclick="incrementAlpha()">
                         <span class="material-icons">arrow_drop_up</span>
                     </button>
-                    <button type="button" id="alphaDown">
+                    <button type="button" onclick="decrementAlpha()">
                         <span class="material-icons">arrow_drop_down</span>
                     </button>
                 </div>
@@ -185,10 +185,10 @@
             <div class="input-group">
                 <span id="takeValue">1</span>
                 <div class="numeric-buttons">
-                    <button type="button" id="takeUp">
+                    <button type="button" onclick="incrementTake()">
                         <span class="material-icons">arrow_drop_up</span>
                     </button>
-                    <button type="button" id="takeDown">
+                    <button type="button" onclick="decrementTake()">
                         <span class="material-icons">arrow_drop_down</span>
                     </button>
                 </div>
@@ -321,63 +321,30 @@
             }
         }
 
-        // Swipe Detection
-        let startX, startY, endX, endY, currentButton;
+        var lastTouch = 0;
+        var touchTimeout = 300; // Maximum time between taps to be considered a double-tap
 
-        function handleSwipe(buttonId, direction) {
-            if (direction === 'up') {
-                document.getElementById(buttonId + 'Up').click();
-            } else if (direction === 'down') {
-                document.getElementById(buttonId + 'Down').click();
+        function handleTouchEvent(event, resetFunction) {
+            var currentTime = new Date().getTime();
+            var timeDifference = currentTime - lastTouch;
+
+            if (timeDifference < touchTimeout) {
+                event.preventDefault(); // Prevent default zoom behavior
+                resetFunction();
+                lastTouch = 0; // Reset lastTouch to avoid multiple resets
+            } else {
+                lastTouch = currentTime;
             }
         }
 
-        function startSwipe(event) {
-            const touch = event.touches[0];
-            startX = touch.clientX;
-            startY = touch.clientY;
+        document.getElementById('sceneValue').addEventListener('touchend', function(event) {
+            handleTouchEvent(event, resetSceneValue);
+        });
 
-            currentButton = event.target.closest('button');
-            if (currentButton) {
-                currentButton.classList.add('active');
-            }
-        }
+        document.getElementById('takeValue').addEventListener('touchend', function(event) {
+            handleTouchEvent(event, resetTakeValue);
+        });
 
-        function endSwipe(event) {
-            if (currentButton) {
-                const touch = event.changedTouches[0];
-                endX = touch.clientX;
-                endY = touch.clientY;
-
-                const dx = endX - startX;
-                const dy = endY - startY;
-                const absDx = Math.abs(dx);
-                const absDy = Math.abs(dy);
-
-                if (absDy > absDx && absDy > 30) { // Vertical swipe
-                    if (dy > 0) {
-                        // Swiped down
-                        handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'down');
-                    } else {
-                        // Swiped up
-                        handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'up');
-                    }
-                }
-
-                currentButton.classList.remove('active');
-                currentButton = null;
-            }
-        }
-
-        document.addEventListener('touchstart', startSwipe);
-        document.addEventListener('touchend', endSwipe);
-
-        document.getElementById('sceneUp').addEventListener('click', incrementNumeric);
-        document.getElementById('sceneDown').addEventListener('click', decrementNumeric);
-        document.getElementById('alphaUp').addEventListener('click', incrementAlpha);
-        document.getElementById('alphaDown').addEventListener('click', decrementAlpha);
-        document.getElementById('takeUp').addEventListener('click', incrementTake);
-        document.getElementById('takeDown').addEventListener('click', decrementTake);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
 
         // Apply saved preferences on page load

@@ -23,7 +23,7 @@
 
     .input-group label {
         font-weight: bold;
-        font-size: 18px;
+        font-size: 1.5vw; /* Responsive font size based on viewport width */
         width: 80px;
         text-align: center;
     }
@@ -41,6 +41,8 @@
         margin-left: 20px;
         background-color: #f0f0f0; /* Optional: Add a background color to distinguish the blocks */
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow to give a block-like appearance */
+        height: 40vh; /* Adjust this value as needed */
+        box-sizing: border-box; /* Ensure padding and border are included in height */
     }
 
     .numeric-buttons,
@@ -52,10 +54,10 @@
 
     .numeric-buttons button,
     .alpha-buttons button {
-        width: 30px; /* Adjusted width */
-        height: 30px; /* Adjusted height */
+        width: 3vw; /* Responsive width based on viewport width */
+        height: 3vw; /* Responsive height based on viewport width */
         padding: 8px;
-        font-size: 14px;
+        font-size: 1.5vw; /* Responsive font size */
         border: 1px solid #5f3dae; /* Updated button border color */
         border-radius: 50%; /* Make the buttons circular */
         cursor: pointer;
@@ -69,20 +71,20 @@
 
     .numeric-buttons button .material-icons,
     .alpha-buttons button .material-icons {
-        font-size: 18px;
+        font-size: 1.5vw; /* Responsive font size */
         color: #c1b5e3; /* Updated icon color */
     }
 
     #sceneValue,
     #takeValue {
-        font-size: 120px;
+        font-size: 10vw; /* Responsive font size based on viewport width */
         font-weight: bold;
         text-align: center;
         padding: 0 20px; /* Increase padding on left and right */
     }
 
     #currentDate {
-        font-size: 20px;
+        font-size: 2vw; /* Responsive font size based on viewport width */
         font-weight: bold;
         text-align: right;
         margin-top: 20px;
@@ -98,7 +100,7 @@
     #video {
         margin-bottom: 10px;
         padding: 10px 10px 10px 20px;
-        font-size: 20px;
+        font-size: 2vw; /* Responsive font size */
         border: none;
         width: calc(100% - 30px); /* Adjust width to fit */
         max-width: 100%; /* Set maximum width */

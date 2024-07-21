@@ -11,12 +11,6 @@
         padding: 20px;
         margin: 0;
         font-size: 20px;
-        transition: background-color 0.3s, color 0.3s;
-    }
-
-    body.dark-mode {
-        background-color: #121212;
-        color: #ffffff;
     }
 
     .input-group {
@@ -49,12 +43,6 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow to give a block-like appearance */
         height: 60vh; /* Adjust this value as needed */
         box-sizing: border-box; /* Ensure padding and border are included in height */
-        transition: background-color 0.3s;
-    }
-
-    body.dark-mode .input-box {
-        background-color: #1e1e1e;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     }
 
     .numeric-buttons,
@@ -79,25 +67,12 @@
         justify-content: center;
         background-color: #5f3dae; /* Updated button background color */
         -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-        transition: background-color 0.3s, border-color 0.3s;
-    }
-
-    body.dark-mode .numeric-buttons button,
-    body.dark-mode .alpha-buttons button {
-        background-color: #5f3dae; /* Keep the button background color */
-        border-color: #5f3dae; /* Match the border color */
     }
 
     .numeric-buttons button .material-icons,
     .alpha-buttons button .material-icons {
         font-size: 2.8vw; /* Responsive font size */
         color: #c1b5e3; /* Updated icon color */
-        transition: color 0.3s;
-    }
-
-    body.dark-mode .numeric-buttons button .material-icons,
-    body.dark-mode .alpha-buttons button .material-icons {
-        color: #ffffff; /* Keep the icon color visible on dark mode */
     }
 
     #sceneValue,
@@ -133,45 +108,9 @@
         max-width: 100%; /* Set maximum width */
         font-weight: bold; /* Make the text bold */
     }
-    
-    body.dark-mode #video {
-        background-color: #121212; /* Dark mode background */
-        color: #ffffff; /* Dark mode text color */
-    }
-
-    .dark-mode-toggle {
-        position: fixed;
-        bottom: 200px;
-        left: 20px;
-        background: #5f3dae;
-        color: #ffffff;
-        border: none;
-        padding: 10px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 1.5vw;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        transition: background-color 0.3s, box-shadow 0.3s;
-        
-    }
-
-    .dark-mode-toggle .material-icons {
-        font-size: 3.5vw; /* Responsive icon size */
-    }
-
-    body.dark-mode .dark-mode-toggle {
-        background: #333333;
-        box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
-    }
 </style>
 </head>
 <body>
-    <button class="dark-mode-toggle" onclick="toggleDarkMode()">
-        <span class="material-icons">brightness_4</span>
-    </button>
     <input type="text" id="video" placeholder="Enter video name">
 
     <div class="scene-take-group">
@@ -330,10 +269,6 @@
         document.getElementById('takeValue').addEventListener('touchend', function(event) {
             handleTouchEvent(event, resetTakeValue);
         });
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-        }
 
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);

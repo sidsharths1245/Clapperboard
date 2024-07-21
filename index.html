@@ -81,6 +81,8 @@
         font-weight: bold;
         text-align: center;
         padding: 0 20px; /* Increase padding on left and right */
+        cursor: pointer; /* Indicate clickable element */
+        -webkit-tap-highlight-color: transparent;
     }
 
     #currentDate {
@@ -232,6 +234,41 @@
             takeValue = 1;
             document.getElementById('takeValue').textContent = takeValue;
         }
+
+        function resetSceneValue() {
+            numericValue = 1;
+            alphaValue = 'A';
+            updateSceneValue();
+        }
+
+        function resetTakeValue() {
+            takeValue = 1;
+            document.getElementById('takeValue').textContent = takeValue;
+        }
+
+        var lastTouch = 0;
+        var touchTimeout = 300; // Maximum time between taps to be considered a double-tap
+
+        function handleTouchEvent(event, resetFunction) {
+            var currentTime = new Date().getTime();
+            var timeDifference = currentTime - lastTouch;
+
+            if (timeDifference < touchTimeout) {
+                event.preventDefault(); // Prevent default zoom behavior
+                resetFunction();
+                lastTouch = 0; // Reset lastTouch to avoid multiple resets
+            } else {
+                lastTouch = currentTime;
+            }
+        }
+
+        document.getElementById('sceneValue').addEventListener('touchend', function(event) {
+            handleTouchEvent(event, resetSceneValue);
+        });
+
+        document.getElementById('takeValue').addEventListener('touchend', function(event) {
+            handleTouchEvent(event, resetTakeValue);
+        });
 
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);

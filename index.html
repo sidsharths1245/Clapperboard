@@ -207,8 +207,6 @@
         var numericValue = 1;
         var alphaValue = 'A';
         var takeValue = 1;
-        var lastTouch = 0;
-        var touchTimeout = 300; // Maximum time between taps to be considered a double-tap
 
         function updateCurrentDate() {
             var currentDateElement = document.getElementById('currentDate');
@@ -323,19 +321,7 @@
             }
         }
 
-        function handleDoubleTap(event, resetFunction) {
-            var currentTime = new Date().getTime();
-            var timeDifference = currentTime - lastTouch;
-
-            if (timeDifference < touchTimeout) {
-                event.preventDefault(); // Prevent default zoom behavior
-                resetFunction();
-                lastTouch = 0; // Reset lastTouch to avoid multiple resets
-            } else {
-                lastTouch = currentTime;
-            }
-        }
-
+        // Swipe Detection
         let startX, startY, endX, endY, currentButton;
 
         function handleSwipe(buttonId, direction) {
@@ -383,52 +369,8 @@
             }
         }
 
-        function handleTouchStart(event) {
-            const touch = event.touches[0];
-            startX = touch.clientX;
-            startY = touch.clientY;
-            currentButton = event.target.closest('button');
-            if (currentButton) {
-                currentButton.classList.add('active');
-            }
-        }
-
-        function handleTouchEnd(event) {
-            const touch = event.changedTouches[0];
-            endX = touch.clientX;
-            endY = touch.clientY;
-
-            const dx = endX - startX;
-            const dy = endY - startY;
-            const absDx = Math.abs(dx);
-            const absDy = Math.abs(dy);
-
-            if (absDy > absDx && absDy > 30) { // Vertical swipe
-                if (dy > 0) {
-                    // Swiped down
-                    handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'down');
-                } else {
-                    // Swiped up
-                    handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'up');
-                }
-            } else {
-                handleDoubleTap(event, function() {
-                    if (currentButton) {
-                        if (currentButton.id.includes('scene')) {
-                            resetSceneValue();
-                        } else if (currentButton.id.includes('take')) {
-                            resetTakeValue();
-                        }
-                    }
-                });
-            }
-
-            currentButton.classList.remove('active');
-            currentButton = null;
-        }
-
-        document.addEventListener('touchstart', handleTouchStart);
-        document.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('touchstart', startSwipe);
+        document.addEventListener('touchend', endSwipe);
 
         document.getElementById('sceneUp').addEventListener('click', incrementNumeric);
         document.getElementById('sceneDown').addEventListener('click', decrementNumeric);

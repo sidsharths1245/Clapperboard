@@ -137,19 +137,20 @@
 
     .custom-button {
         font-size: 2.8vw; /* Responsive font size based on viewport width */
-        padding: 8px 8px;
-        background-color: #5f3dae;
-        color: #c1b5e3;
+        padding: 10px;
+        background-color: transparent; /* Remove background */
+        color: #5f3dae; /* Icon color in light mode */
         border: none;
-        border-radius: 50px;
+        border-radius: 50%; /* Make the button circular */
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: color 0.3s; /* Smooth transition for icon color */
     }
 
     body.dark-mode .custom-button {
-        background-color: #6a48c1;
+        color: #c1b5e3; /* Icon color in dark mode */
     }
 </style>
 </head>

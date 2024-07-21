@@ -371,20 +371,29 @@
             }
         }
 
-        function handleDoubleTap(event) {
+        function handleDoubleTap(event, id, callback) {
             var currentTime = new Date().getTime();
             var tapInterval = currentTime - lastTap;
             lastTap = currentTime;
 
             if (tapInterval < tapDelay) {
                 // Detected double-tap
-                resetSceneValue();
+                callback();
             }
+        }
+
+        function handleSceneDoubleTap(event) {
+            handleDoubleTap(event, 'sceneValue', resetSceneValue);
+        }
+
+        function handleTakeDoubleTap(event) {
+            handleDoubleTap(event, 'takeValue', resetTakeValue);
         }
 
         document.addEventListener('touchstart', startSwipe);
         document.addEventListener('touchend', endSwipe);
-        document.getElementById('sceneValue').addEventListener('touchend', handleDoubleTap);
+        document.getElementById('sceneValue').addEventListener('touchend', handleSceneDoubleTap);
+        document.getElementById('takeValue').addEventListener('touchend', handleTakeDoubleTap);
 
         document.getElementById('sceneUp').addEventListener('click', incrementNumeric);
         document.getElementById('sceneDown').addEventListener('click', decrementNumeric);

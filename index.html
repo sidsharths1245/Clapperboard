@@ -150,7 +150,7 @@
     }
 
     body.dark-mode .custom-button {
-        color: 5f3dae; /* Icon color in dark mode */
+        color: #5f3dae; /* Icon color in dark mode */
     }
 </style>
 </head>
@@ -207,6 +207,8 @@
         var numericValue = 1;
         var alphaValue = 'A';
         var takeValue = 1;
+        var lastTap = 0;
+        var tapDelay = 300; // Time in milliseconds to detect double tap
 
         function updateCurrentDate() {
             var currentDateElement = document.getElementById('currentDate');
@@ -369,8 +371,20 @@
             }
         }
 
+        function handleDoubleTap(event) {
+            var currentTime = new Date().getTime();
+            var tapInterval = currentTime - lastTap;
+            lastTap = currentTime;
+
+            if (tapInterval < tapDelay) {
+                // Detected double-tap
+                resetSceneValue();
+            }
+        }
+
         document.addEventListener('touchstart', startSwipe);
         document.addEventListener('touchend', endSwipe);
+        document.getElementById('sceneValue').addEventListener('touchend', handleDoubleTap);
 
         document.getElementById('sceneUp').addEventListener('click', incrementNumeric);
         document.getElementById('sceneDown').addEventListener('click', decrementNumeric);

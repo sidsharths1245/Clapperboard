@@ -152,6 +152,25 @@
     body.dark-mode .custom-button {
         color: 5f3dae; /* Icon color in dark mode */
     }
+
+    .reset-button {
+        font-size: 2.6vw; /* Responsive font size */
+        padding: 0px;
+        background-color: transparent; /* Remove background */
+        color: #5f3dae; /* Icon color in light mode */
+        border: none;
+        border-radius: 50%; /* Make the button circular */
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.3s; /* Smooth transition for icon color */
+        margin-right: 620px;
+    }
+
+    body.dark-mode .reset-button {
+        color: 5f3dae; /* Icon color in dark mode */
+    }
 </style>
 </head>
 <body>
@@ -199,6 +218,9 @@
     <div class="date-container">
         <button class="custom-button" id="darkModeToggle">
             <span class="material-icons" id="darkModeIcon">brightness_4</span>
+        </button>
+        <button class="reset-button" id="resetButton">
+            <span class="material-icons">refresh</span>
         </button>
         <div id="currentDate"></div>
     </div>
@@ -379,6 +401,7 @@
         document.getElementById('takeUp').addEventListener('click', incrementTake);
         document.getElementById('takeDown').addEventListener('click', decrementTake);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('resetButton').addEventListener('click', resetSceneValue);
 
         // Apply saved preferences on page load
         applySavedPreferences();

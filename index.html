@@ -162,19 +162,19 @@
             <label for="scene">Scene</label>
             <div class="input-group">
                 <div class="numeric-buttons">
-                    <button type="button" onclick="incrementNumeric()">
+                    <button type="button" id="sceneUp">
                         <span class="material-icons">arrow_drop_up</span>
                     </button>
-                    <button type="button" onclick="decrementNumeric()">
+                    <button type="button" id="sceneDown">
                         <span class="material-icons">arrow_drop_down</span>
                     </button>
                 </div>
                 <span id="sceneValue">1A</span>
                 <div class="alpha-buttons">
-                    <button type="button" onclick="incrementAlpha()">
+                    <button type="button" id="alphaUp">
                         <span class="material-icons">arrow_drop_up</span>
                     </button>
-                    <button type="button" onclick="decrementAlpha()">
+                    <button type="button" id="alphaDown">
                         <span class="material-icons">arrow_drop_down</span>
                     </button>
                 </div>
@@ -185,10 +185,10 @@
             <div class="input-group">
                 <span id="takeValue">1</span>
                 <div class="numeric-buttons">
-                    <button type="button" onclick="incrementTake()">
+                    <button type="button" id="takeUp">
                         <span class="material-icons">arrow_drop_up</span>
                     </button>
-                    <button type="button" onclick="decrementTake()">
+                    <button type="button" id="takeDown">
                         <span class="material-icons">arrow_drop_down</span>
                     </button>
                 </div>
@@ -207,6 +207,8 @@
         var numericValue = 1;
         var alphaValue = 'A';
         var takeValue = 1;
+        var lastTouch = 0;
+        var touchTimeout = 300; // Maximum time between taps to be considered a double-tap
 
         function updateCurrentDate() {
             var currentDateElement = document.getElementById('currentDate');
@@ -321,10 +323,7 @@
             }
         }
 
-        var lastTouch = 0;
-        var touchTimeout = 300; // Maximum time between taps to be considered a double-tap
-
-        function handleTouchEvent(event, resetFunction) {
+        function handleDoubleTap(event, resetFunction) {
             var currentTime = new Date().getTime();
             var timeDifference = currentTime - lastTouch;
 
@@ -337,14 +336,106 @@
             }
         }
 
-        document.getElementById('sceneValue').addEventListener('touchend', function(event) {
-            handleTouchEvent(event, resetSceneValue);
-        });
+        let startX, startY, endX, endY, currentButton;
 
-        document.getElementById('takeValue').addEventListener('touchend', function(event) {
-            handleTouchEvent(event, resetTakeValue);
-        });
+        function handleSwipe(buttonId, direction) {
+            if (direction === 'up') {
+                document.getElementById(buttonId + 'Up').click();
+            } else if (direction === 'down') {
+                document.getElementById(buttonId + 'Down').click();
+            }
+        }
 
+        function startSwipe(event) {
+            const touch = event.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+
+            currentButton = event.target.closest('button');
+            if (currentButton) {
+                currentButton.classList.add('active');
+            }
+        }
+
+        function endSwipe(event) {
+            if (currentButton) {
+                const touch = event.changedTouches[0];
+                endX = touch.clientX;
+                endY = touch.clientY;
+
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const absDx = Math.abs(dx);
+                const absDy = Math.abs(dy);
+
+                if (absDy > absDx && absDy > 30) { // Vertical swipe
+                    if (dy > 0) {
+                        // Swiped down
+                        handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'down');
+                    } else {
+                        // Swiped up
+                        handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'up');
+                    }
+                }
+
+                currentButton.classList.remove('active');
+                currentButton = null;
+            }
+        }
+
+        function handleTouchStart(event) {
+            const touch = event.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            currentButton = event.target.closest('button');
+            if (currentButton) {
+                currentButton.classList.add('active');
+            }
+        }
+
+        function handleTouchEnd(event) {
+            const touch = event.changedTouches[0];
+            endX = touch.clientX;
+            endY = touch.clientY;
+
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const absDx = Math.abs(dx);
+            const absDy = Math.abs(dy);
+
+            if (absDy > absDx && absDy > 30) { // Vertical swipe
+                if (dy > 0) {
+                    // Swiped down
+                    handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'down');
+                } else {
+                    // Swiped up
+                    handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'up');
+                }
+            } else {
+                handleDoubleTap(event, function() {
+                    if (currentButton) {
+                        if (currentButton.id.includes('scene')) {
+                            resetSceneValue();
+                        } else if (currentButton.id.includes('take')) {
+                            resetTakeValue();
+                        }
+                    }
+                });
+            }
+
+            currentButton.classList.remove('active');
+            currentButton = null;
+        }
+
+        document.addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchend', handleTouchEnd);
+
+        document.getElementById('sceneUp').addEventListener('click', incrementNumeric);
+        document.getElementById('sceneDown').addEventListener('click', decrementNumeric);
+        document.getElementById('alphaUp').addEventListener('click', incrementAlpha);
+        document.getElementById('alphaDown').addEventListener('click', decrementAlpha);
+        document.getElementById('takeUp').addEventListener('click', incrementTake);
+        document.getElementById('takeDown').addEventListener('click', decrementTake);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
 
         // Apply saved preferences on page load

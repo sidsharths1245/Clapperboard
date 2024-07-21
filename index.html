@@ -91,24 +91,6 @@
         color: #c1b5e3; /* Updated icon color */
     }
 
-    .reset-button {
-        background-color: #e53935; /* Red color for reset button */
-        color: #ffffff;
-        font-size: 2vw; /* Responsive font size */
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        margin: 5px 0; /* Space around the button */
-        padding: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .reset-button .material-icons {
-        font-size: 2.8vw; /* Responsive font size */
-    }
-
     #sceneValue,
     #takeValue {
         font-size: 15vw; /* Responsive font size based on viewport width */
@@ -183,9 +165,6 @@
                     <button type="button" id="sceneUp">
                         <span class="material-icons">arrow_drop_up</span>
                     </button>
-                    <button type="button" id="sceneReset" class="reset-button">
-                        <span class="material-icons">refresh</span>
-                    </button>
                     <button type="button" id="sceneDown">
                         <span class="material-icons">arrow_drop_down</span>
                     </button>
@@ -194,9 +173,6 @@
                 <div class="alpha-buttons">
                     <button type="button" id="alphaUp">
                         <span class="material-icons">arrow_drop_up</span>
-                    </button>
-                    <button type="button" id="alphaReset" class="reset-button">
-                        <span class="material-icons">refresh</span>
                     </button>
                     <button type="button" id="alphaDown">
                         <span class="material-icons">arrow_drop_down</span>
@@ -211,9 +187,6 @@
                 <div class="numeric-buttons">
                     <button type="button" id="takeUp">
                         <span class="material-icons">arrow_drop_up</span>
-                    </button>
-                    <button type="button" id="takeReset" class="reset-button">
-                        <span class="material-icons">refresh</span>
                     </button>
                     <button type="button" id="takeDown">
                         <span class="material-icons">arrow_drop_down</span>
@@ -322,11 +295,6 @@
             document.getElementById('takeValue').textContent = takeValue;
         }
 
-        function resetAlphaValue() {
-            alphaValue = 'A';
-            updateSceneValue();
-        }
-
         function toggleDarkMode() {
             var body = document.body;
             var icon = document.getElementById('darkModeIcon');
@@ -406,13 +374,10 @@
 
         document.getElementById('sceneUp').addEventListener('click', incrementNumeric);
         document.getElementById('sceneDown').addEventListener('click', decrementNumeric);
-        document.getElementById('sceneReset').addEventListener('click', resetSceneValue);
         document.getElementById('alphaUp').addEventListener('click', incrementAlpha);
         document.getElementById('alphaDown').addEventListener('click', decrementAlpha);
-        document.getElementById('alphaReset').addEventListener('click', resetAlphaValue);
         document.getElementById('takeUp').addEventListener('click', incrementTake);
         document.getElementById('takeDown').addEventListener('click', decrementTake);
-        document.getElementById('takeReset').addEventListener('click', resetTakeValue);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
 
         // Apply saved preferences on page load

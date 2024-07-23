@@ -271,12 +271,14 @@
         function incrementTake() {
             takeValue++;
             document.getElementById('takeValue').textContent = takeValue;
+            saveValues(); // Save values whenever the take value is incremented
         }
 
         function decrementTake() {
             if (takeValue > 1) {
                 takeValue--;
                 document.getElementById('takeValue').textContent = takeValue;
+                saveValues(); // Save values whenever the take value is decremented
             }
         }
 
@@ -284,6 +286,7 @@
             document.getElementById('sceneValue').textContent = numericValue + alphaValue;
             takeValue = 1;
             document.getElementById('takeValue').textContent = takeValue;
+            saveValues(); // Save values whenever the scene value is updated
         }
 
         function resetSceneValue() {
@@ -295,6 +298,7 @@
         function resetTakeValue() {
             takeValue = 1;
             document.getElementById('takeValue').textContent = takeValue;
+            saveValues(); // Save values whenever the take value is reset
         }
 
         function toggleDarkMode() {
@@ -321,6 +325,34 @@
                 document.body.classList.remove('dark-mode');
                 document.getElementById('darkModeIcon').textContent = 'brightness_4'; // Moon icon
             }
+
+            // Load saved values
+            var savedVideo = localStorage.getItem('videoName');
+            if (savedVideo) {
+                document.getElementById('video').value = savedVideo;
+            }
+
+            var savedNumericValue = localStorage.getItem('numericValue');
+            var savedAlphaValue = localStorage.getItem('alphaValue');
+            var savedTakeValue = localStorage.getItem('takeValue');
+
+            if (savedNumericValue && savedAlphaValue) {
+                numericValue = parseInt(savedNumericValue);
+                alphaValue = savedAlphaValue;
+                updateSceneValue();
+            }
+
+            if (savedTakeValue) {
+                takeValue = parseInt(savedTakeValue);
+                document.getElementById('takeValue').textContent = takeValue;
+            }
+        }
+
+        function saveValues() {
+            localStorage.setItem('videoName', document.getElementById('video').value);
+            localStorage.setItem('numericValue', numericValue);
+            localStorage.setItem('alphaValue', alphaValue);
+            localStorage.setItem('takeValue', takeValue);
         }
 
         // Swipe Detection
@@ -402,6 +434,7 @@
         document.getElementById('takeUp').addEventListener('click', incrementTake);
         document.getElementById('takeDown').addEventListener('click', decrementTake);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('video').addEventListener('input', saveValues);
 
         // Apply saved preferences on page load
         applySavedPreferences();

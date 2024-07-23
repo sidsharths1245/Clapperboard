@@ -147,7 +147,6 @@
         align-items: center;
         justify-content: center;
         transition: color 0.3s; /* Smooth transition for icon color */
-        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
     }
 
     body.dark-mode .custom-button {
@@ -285,7 +284,6 @@
 
         function updateSceneValue() {
             document.getElementById('sceneValue').textContent = numericValue + alphaValue;
-            takeValue = 1;
             document.getElementById('takeValue').textContent = takeValue;
             saveValues(); // Save values whenever the scene value is updated
         }
@@ -340,7 +338,7 @@
             if (savedNumericValue && savedAlphaValue) {
                 numericValue = parseInt(savedNumericValue);
                 alphaValue = savedAlphaValue;
-                updateSceneValue();
+                document.getElementById('sceneValue').textContent = numericValue + alphaValue;
             }
 
             if (savedTakeValue) {

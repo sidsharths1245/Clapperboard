@@ -8,15 +8,18 @@
     body {
         font-family: Arial, sans-serif;
         background-color: #ffffff;
-        padding: 20px;
         margin: 0;
         font-size: 20px;
         transition: background-color 0.3s, color 0.3s;
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: center;    /* Center vertically */
+        height: 100vh;          /* Full viewport height */
     }
 
-    body.dark-mode {
-        background-color: #121212;
-        color: #ffffff;
+    .container {
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .input-group {
@@ -47,7 +50,7 @@
         margin-left: 20px;
         background-color: #f0f0f0; /* Optional: Add a background color to distinguish the blocks */
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow to give a block-like appearance */
-        height: 60vh; /* Adjust this value as needed */
+        height: 50vh; /* Adjust this value as needed */
         box-sizing: border-box; /* Ensure padding and border are included in height */
     }
 
@@ -156,52 +159,54 @@
 </style>
 </head>
 <body>
-    <input type="text" id="video" placeholder="Enter video name">
+    <div class="container">
+        <input type="text" id="video" placeholder="Enter video name">
 
-    <div class="scene-take-group">
-        <div class="input-box">
-            <label for="scene">Scene</label>
-            <div class="input-group">
-                <div class="numeric-buttons">
-                    <button type="button" id="sceneUp">
-                        <span class="material-icons">arrow_drop_up</span>
-                    </button>
-                    <button type="button" id="sceneDown">
-                        <span class="material-icons">arrow_drop_down</span>
-                    </button>
+        <div class="scene-take-group">
+            <div class="input-box">
+                <label for="scene">Scene</label>
+                <div class="input-group">
+                    <div class="numeric-buttons">
+                        <button type="button" id="sceneUp">
+                            <span class="material-icons">arrow_drop_up</span>
+                        </button>
+                        <button type="button" id="sceneDown">
+                            <span class="material-icons">arrow_drop_down</span>
+                        </button>
+                    </div>
+                    <span id="sceneValue">1A</span>
+                    <div class="alpha-buttons">
+                        <button type="button" id="alphaUp">
+                            <span class="material-icons">arrow_drop_up</span>
+                        </button>
+                        <button type="button" id="alphaDown">
+                            <span class="material-icons">arrow_drop_down</span>
+                        </button>
+                    </div>
                 </div>
-                <span id="sceneValue">1A</span>
-                <div class="alpha-buttons">
-                    <button type="button" id="alphaUp">
-                        <span class="material-icons">arrow_drop_up</span>
-                    </button>
-                    <button type="button" id="alphaDown">
-                        <span class="material-icons">arrow_drop_down</span>
-                    </button>
+            </div>
+            <div class="input-box">
+                <label for="take">Take</label>
+                <div class="input-group">
+                    <span id="takeValue">1</span>
+                    <div class="numeric-buttons">
+                        <button type="button" id="takeUp">
+                            <span class="material-icons">arrow_drop_up</span>
+                        </button>
+                        <button type="button" id="takeDown">
+                            <span class="material-icons">arrow_drop_down</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="input-box">
-            <label for="take">Take</label>
-            <div class="input-group">
-                <span id="takeValue">1</span>
-                <div class="numeric-buttons">
-                    <button type="button" id="takeUp">
-                        <span class="material-icons">arrow_drop_up</span>
-                    </button>
-                    <button type="button" id="takeDown">
-                        <span class="material-icons">arrow_drop_down</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="date-container">
-        <button class="custom-button" id="darkModeToggle">
-            <span class="material-icons" id="darkModeIcon">brightness_4</span>
-        </button>
-        <div id="currentDate"></div>
+        <div class="date-container">
+            <button class="custom-button" id="darkModeToggle">
+                <span class="material-icons" id="darkModeIcon">brightness_4</span>
+            </button>
+            <div id="currentDate"></div>
+        </div>
     </div>
 
     <script>
@@ -271,161 +276,40 @@
 
         function incrementTake() {
             takeValue++;
-            document.getElementById('takeValue').textContent = takeValue;
-            saveValues(); // Save values whenever the take value is incremented
+            updateTakeValue();
         }
 
         function decrementTake() {
             if (takeValue > 1) {
                 takeValue--;
-                document.getElementById('takeValue').textContent = takeValue;
-                saveValues(); // Save values whenever the take value is decremented
+                updateTakeValue();
             }
         }
 
         function updateSceneValue() {
-            document.getElementById('sceneValue').textContent = numericValue + alphaValue;
-            document.getElementById('takeValue').textContent = takeValue;
-            saveValues(); // Save values whenever the scene value is updated
+            var sceneValueElement = document.getElementById('sceneValue');
+            sceneValueElement.textContent = numericValue + alphaValue;
+            updateTakeValue(); // Reset takeValue when sceneValue changes
         }
 
-        function resetSceneValue() {
-            numericValue = 1;
-            alphaValue = 'A';
-            updateSceneValue();
+        function updateTakeValue() {
+            var takeValueElement = document.getElementById('takeValue');
+            takeValueElement.textContent = takeValue;
         }
 
-        function resetTakeValue() {
-            takeValue = 1;
-            document.getElementById('takeValue').textContent = takeValue;
-            saveValues(); // Save values whenever the take value is reset
-        }
-
-        function toggleDarkMode() {
-            var body = document.body;
-            var icon = document.getElementById('darkModeIcon');
-
-            body.classList.toggle('dark-mode');
-            
-            if (body.classList.contains('dark-mode')) {
-                icon.textContent = 'brightness_7'; // Sun icon for light mode
-                localStorage.setItem('darkMode', 'enabled'); // Save dark mode preference
-            } else {
-                icon.textContent = 'brightness_4'; // Moon icon for dark mode
-                localStorage.setItem('darkMode', 'disabled'); // Save light mode preference
-            }
-        }
-
-        function applySavedPreferences() {
-            var darkModePreference = localStorage.getItem('darkMode');
-            if (darkModePreference === 'enabled') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('darkModeIcon').textContent = 'brightness_7'; // Sun icon
-            } else {
-                document.body.classList.remove('dark-mode');
-                document.getElementById('darkModeIcon').textContent = 'brightness_4'; // Moon icon
-            }
-
-            // Load saved values
-            var savedVideo = localStorage.getItem('videoName');
-            if (savedVideo) {
-                document.getElementById('video').value = savedVideo;
-            }
-
-            var savedNumericValue = localStorage.getItem('numericValue');
-            var savedAlphaValue = localStorage.getItem('alphaValue');
-            var savedTakeValue = localStorage.getItem('takeValue');
-
-            if (savedNumericValue && savedAlphaValue) {
-                numericValue = parseInt(savedNumericValue);
-                alphaValue = savedAlphaValue;
-                document.getElementById('sceneValue').textContent = numericValue + alphaValue;
-            }
-
-            if (savedTakeValue) {
-                takeValue = parseInt(savedTakeValue);
-                document.getElementById('takeValue').textContent = takeValue;
-            }
-        }
-
-        function saveValues() {
-            localStorage.setItem('videoName', document.getElementById('video').value);
-            localStorage.setItem('numericValue', numericValue);
-            localStorage.setItem('alphaValue', alphaValue);
-            localStorage.setItem('takeValue', takeValue);
-        }
-
-        // Swipe Detection
-        let startX, startY, endX, endY, currentButton;
-
-        function handleSwipe(buttonId, direction) {
-            if (direction === 'up') {
-                document.getElementById(buttonId + 'Up').click();
-            } else if (direction === 'down') {
-                document.getElementById(buttonId + 'Down').click();
-            }
-        }
-
-        function startSwipe(event) {
-            const touch = event.touches[0];
-            startX = touch.clientX;
-            startY = touch.clientY;
-
-            currentButton = event.target.closest('button');
-            if (currentButton) {
-                currentButton.classList.add('active');
-            }
-        }
-
-        function endSwipe(event) {
-            if (currentButton) {
-                const touch = event.changedTouches[0];
-                endX = touch.clientX;
-                endY = touch.clientY;
-
-                const dx = endX - startX;
-                const dy = endY - startY;
-                const absDx = Math.abs(dx);
-                const absDy = Math.abs(dy);
-
-                if (absDy > absDx && absDy > 30) { // Vertical swipe
-                    if (dy > 0) {
-                        // Swiped down
-                        handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'down');
-                    } else {
-                        // Swiped up
-                        handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'up');
-                    }
-                }
-
-                currentButton.classList.remove('active');
-                currentButton = null;
-            }
-        }
-
-        function handleDoubleTap(event, id, callback) {
+        function handleDoubleTap(element, incrementFunction, decrementFunction) {
             var currentTime = new Date().getTime();
-            var tapInterval = currentTime - lastTap;
-            lastTap = currentTime;
-
-            if (tapInterval < tapDelay) {
-                // Detected double-tap
-                callback();
+            if (currentTime - lastTap < tapDelay) {
+                element.removeEventListener('click', clickHandler); // Remove single tap event
+                incrementFunction();
             }
+            lastTap = currentTime;
+            function clickHandler() {
+                element.addEventListener('click', clickHandler);
+                setTimeout(() => element.removeEventListener('click', clickHandler), tapDelay);
+            }
+            clickHandler();
         }
-
-        function handleSceneDoubleTap(event) {
-            handleDoubleTap(event, 'sceneValue', resetSceneValue);
-        }
-
-        function handleTakeDoubleTap(event) {
-            handleDoubleTap(event, 'takeValue', resetTakeValue);
-        }
-
-        document.addEventListener('touchstart', startSwipe);
-        document.addEventListener('touchend', endSwipe);
-        document.getElementById('sceneValue').addEventListener('touchend', handleSceneDoubleTap);
-        document.getElementById('takeValue').addEventListener('touchend', handleTakeDoubleTap);
 
         document.getElementById('sceneUp').addEventListener('click', incrementNumeric);
         document.getElementById('sceneDown').addEventListener('click', decrementNumeric);
@@ -433,14 +317,23 @@
         document.getElementById('alphaDown').addEventListener('click', decrementAlpha);
         document.getElementById('takeUp').addEventListener('click', incrementTake);
         document.getElementById('takeDown').addEventListener('click', decrementTake);
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        document.getElementById('video').addEventListener('input', saveValues);
 
-        // Apply saved preferences on page load
-        applySavedPreferences();
+        document.getElementById('sceneValue').addEventListener('click', function() {
+            handleDoubleTap(this, incrementNumeric, decrementNumeric);
+        });
+        document.getElementById('takeValue').addEventListener('click', function() {
+            handleDoubleTap(this, incrementTake, decrementTake);
+        });
 
-        updateCurrentDate();
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            var darkModeIcon = document.getElementById('darkModeIcon');
+            darkModeIcon.textContent = document.body.classList.contains('dark-mode') ? 'brightness_7' : 'brightness_4';
+        });
+
+        // Update the current date every second
         setInterval(updateCurrentDate, 1000);
+        updateCurrentDate(); // Initial call to set the date immediately
     </script>
 </body>
 </html>

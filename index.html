@@ -8,7 +8,7 @@
     body {
         font-family: Arial, sans-serif;
         background-color: #ffffff;
-        padding: 20px; /* Keep the padding the same for all sides */
+        padding: 20px;
         margin: 0;
         font-size: 20px;
         transition: background-color 0.3s, color 0.3s;
@@ -35,7 +35,7 @@
     }
 
     .input-box {
-        padding: 20px 10px; /* Add equal padding on top and bottom, less on the sides */
+        padding: 10px;
         border: none; /* Remove border */
         border-radius: 0; /* Remove border radius */
         flex: 1;
@@ -43,10 +43,11 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin: 0 20px; /* Only horizontal margins */
+        margin-right: 20px;
+        margin-left: 20px;
         background-color: #f0f0f0; /* Optional: Add a background color to distinguish the blocks */
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow to give a block-like appearance */
-        height: 45vh; /* Adjust this value as needed */
+        height: 60vh; /* Adjust this value as needed */
         box-sizing: border-box; /* Ensure padding and border are included in height */
     }
 
@@ -268,55 +269,163 @@
             updateSceneValue();
         }
 
-        function updateSceneValue() {
-            document.getElementById('sceneValue').textContent = numericValue + alphaValue;
-            document.getElementById('takeValue').textContent = takeValue;
-        }
-
         function incrementTake() {
             takeValue++;
-            updateTakeValue();
+            document.getElementById('takeValue').textContent = takeValue;
+            saveValues(); // Save values whenever the take value is incremented
         }
 
         function decrementTake() {
             if (takeValue > 1) {
                 takeValue--;
-                updateTakeValue();
+                document.getElementById('takeValue').textContent = takeValue;
+                saveValues(); // Save values whenever the take value is decremented
             }
         }
 
-        function updateTakeValue() {
+        function updateSceneValue() {
+            document.getElementById('sceneValue').textContent = numericValue + alphaValue;
             document.getElementById('takeValue').textContent = takeValue;
+            saveValues(); // Save values whenever the scene value is updated
+        }
+
+        function resetSceneValue() {
+            numericValue = 1;
+            alphaValue = 'A';
+            updateSceneValue();
+        }
+
+        function resetTakeValue() {
+            takeValue = 1;
+            document.getElementById('takeValue').textContent = takeValue;
+            saveValues(); // Save values whenever the take value is reset
         }
 
         function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
+            var body = document.body;
+            var icon = document.getElementById('darkModeIcon');
+
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                icon.textContent = 'brightness_7'; // Sun icon for light mode
+                localStorage.setItem('darkMode', 'enabled'); // Save dark mode preference
+            } else {
+                icon.textContent = 'brightness_4'; // Moon icon for dark mode
+                localStorage.setItem('darkMode', 'disabled'); // Save light mode preference
+            }
         }
 
-        function handleSceneDoubleTap() {
-            var currentTime = new Date().getTime();
-            var tapLength = currentTime - lastTap;
-
-            if (tapLength < tapDelay && tapLength > 0) {
-                numericValue = 1;
-                alphaValue = 'A';
-                updateSceneValue();
+        function applySavedPreferences() {
+            var darkModePreference = localStorage.getItem('darkMode');
+            if (darkModePreference === 'enabled') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeIcon').textContent = 'brightness_7'; // Sun icon
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('darkModeIcon').textContent = 'brightness_4'; // Moon icon
             }
 
-            lastTap = currentTime;
-        }
-
-        function handleTakeDoubleTap() {
-            var currentTime = new Date().getTime();
-            var tapLength = currentTime - lastTap;
-
-            if (tapLength < tapDelay && tapLength > 0) {
-                takeValue = 1;
-                updateTakeValue();
+            // Load saved values
+            var savedVideo = localStorage.getItem('videoName');
+            if (savedVideo) {
+                document.getElementById('video').value = savedVideo;
             }
 
-            lastTap = currentTime;
+            var savedNumericValue = localStorage.getItem('numericValue');
+            var savedAlphaValue = localStorage.getItem('alphaValue');
+            var savedTakeValue = localStorage.getItem('takeValue');
+
+            if (savedNumericValue && savedAlphaValue) {
+                numericValue = parseInt(savedNumericValue);
+                alphaValue = savedAlphaValue;
+                document.getElementById('sceneValue').textContent = numericValue + alphaValue;
+            }
+
+            if (savedTakeValue) {
+                takeValue = parseInt(savedTakeValue);
+                document.getElementById('takeValue').textContent = takeValue;
+            }
         }
+
+        function saveValues() {
+            localStorage.setItem('videoName', document.getElementById('video').value);
+            localStorage.setItem('numericValue', numericValue);
+            localStorage.setItem('alphaValue', alphaValue);
+            localStorage.setItem('takeValue', takeValue);
+        }
+
+        // Swipe Detection
+        let startX, startY, endX, endY, currentButton;
+
+        function handleSwipe(buttonId, direction) {
+            if (direction === 'up') {
+                document.getElementById(buttonId + 'Up').click();
+            } else if (direction === 'down') {
+                document.getElementById(buttonId + 'Down').click();
+            }
+        }
+
+        function startSwipe(event) {
+            const touch = event.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+
+            currentButton = event.target.closest('button');
+            if (currentButton) {
+                currentButton.classList.add('active');
+            }
+        }
+
+        function endSwipe(event) {
+            if (currentButton) {
+                const touch = event.changedTouches[0];
+                endX = touch.clientX;
+                endY = touch.clientY;
+
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const absDx = Math.abs(dx);
+                const absDy = Math.abs(dy);
+
+                if (absDy > absDx && absDy > 30) { // Vertical swipe
+                    if (dy > 0) {
+                        // Swiped down
+                        handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'down');
+                    } else {
+                        // Swiped up
+                        handleSwipe(currentButton.id.replace(/(Up|Down)$/, ''), 'up');
+                    }
+                }
+
+                currentButton.classList.remove('active');
+                currentButton = null;
+            }
+        }
+
+        function handleDoubleTap(event, id, callback) {
+            var currentTime = new Date().getTime();
+            var tapInterval = currentTime - lastTap;
+            lastTap = currentTime;
+
+            if (tapInterval < tapDelay) {
+                // Detected double-tap
+                callback();
+            }
+        }
+
+        function handleSceneDoubleTap(event) {
+            handleDoubleTap(event, 'sceneValue', resetSceneValue);
+        }
+
+        function handleTakeDoubleTap(event) {
+            handleDoubleTap(event, 'takeValue', resetTakeValue);
+        }
+
+        document.addEventListener('touchstart', startSwipe);
+        document.addEventListener('touchend', endSwipe);
+        document.getElementById('sceneValue').addEventListener('touchend', handleSceneDoubleTap);
+        document.getElementById('takeValue').addEventListener('touchend', handleTakeDoubleTap);
 
         document.getElementById('sceneUp').addEventListener('click', incrementNumeric);
         document.getElementById('sceneDown').addEventListener('click', decrementNumeric);
@@ -325,8 +434,10 @@
         document.getElementById('takeUp').addEventListener('click', incrementTake);
         document.getElementById('takeDown').addEventListener('click', decrementTake);
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-        document.getElementById('sceneValue').addEventListener('click', handleSceneDoubleTap);
-        document.getElementById('takeValue').addEventListener('click', handleTakeDoubleTap);
+        document.getElementById('video').addEventListener('input', saveValues);
+
+        // Apply saved preferences on page load
+        applySavedPreferences();
 
         updateCurrentDate();
         setInterval(updateCurrentDate, 1000);

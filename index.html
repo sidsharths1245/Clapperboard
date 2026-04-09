@@ -32,12 +32,15 @@ html,body {
 }
 
 .board {
-  width:100vw;height:100vh;max-width:960px;max-height:520px;
+  /* Swapped vw and vh so it spans correctly when rotated */
+  width:100vh;height:100vw;max-width:960px;max-height:520px;
   background:var(--bg);display:flex;flex-direction:column;
   position:relative;overflow:hidden;
   border:1px solid var(--border2);
   box-shadow:0 0 80px rgba(0,0,0,.7);
   transition:background .35s,border-color .35s;
+  /* Rotate 90 degrees left */
+  transform: rotate(-90deg);
 }
 .board::after {
   content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
@@ -406,37 +409,38 @@ document.getElementById('slDown').addEventListener('click', ()=>setSceneLet(letI
 document.getElementById('tkUp').addEventListener('click',   ()=>setTake(take+1,'up',false));
 document.getElementById('tkDown').addEventListener('click', ()=>setTake(take-1,'down',false));
 
-// ---- SWIPE (throttled — one step per 160ms minimum) ----
+// ---- SWIPE (Updated to use clientX because the UI is rotated -90deg) ----
 function makeSwipeable(el, onUp, onDown, onReset){
-  let startY=null, moved=false, lastStep=0, holdTimer=null;
+  let startX=null, moved=false, lastStep=0, holdTimer=null;
   const THRESH=28, COOLDOWN=160;
 
-  function onStart(y){
-    startY=y; moved=false;
-    holdTimer=setTimeout(()=>{ moved=true; onReset(); startY=null; },600);
+  function onStart(x){
+    startX=x; moved=false;
+    holdTimer=setTimeout(()=>{ moved=true; onReset(); startX=null; },600);
   }
-  function onMove(y){
-    if(startY===null) return;
-    const dy=startY-y;
-    if(Math.abs(dy)<THRESH) return;
+  function onMove(x){
+    if(startX===null) return;
+    // dx > 0 means the physical touch moved Left (which translates to "Up" on a left-rotated UI)
+    const dx=startX-x; 
+    if(Math.abs(dx)<THRESH) return;
     const now=Date.now();
     if(now-lastStep < COOLDOWN) return;
     clearTimeout(holdTimer);
     moved=true; lastStep=now;
-    if(dy>0){ onUp(); startY=y; }
-    else     { onDown(); startY=y; }
+    if(dx>0){ onUp(); startX=x; }
+    else    { onDown(); startX=x; }
   }
   function onEnd(){
     clearTimeout(holdTimer);
-    startY=null; moved=false;
+    startX=null; moved=false;
   }
 
-  el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e.touches[0].clientY);},{passive:false});
-  el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e.touches[0].clientY);},{passive:false});
+  el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e.touches[0].clientX);},{passive:false});
+  el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e.touches[0].clientX);},{passive:false});
   el.addEventListener('touchend',  e=>{e.preventDefault();onEnd();},{passive:false});
-  el.addEventListener('mousedown', e=>onStart(e.clientY));
-  window.addEventListener('mousemove',e=>{if(startY!==null)onMove(e.clientY);});
-  window.addEventListener('mouseup', ()=>{if(startY!==null)onEnd();});
+  el.addEventListener('mousedown', e=>onStart(e.clientX));
+  window.addEventListener('mousemove',e=>{if(startX!==null)onMove(e.clientX);});
+  window.addEventListener('mouseup', ()=>{if(startX!==null)onEnd();});
 }
 
 makeSwipeable(snEl,

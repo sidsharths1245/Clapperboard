@@ -32,15 +32,12 @@ html,body {
 }
 
 .board {
-  /* Swapped vw and vh so it spans correctly when rotated */
-  width:100vh;height:100vw;max-width:960px;max-height:520px;
+  width:100vw;height:100vh;max-width:960px;max-height:520px;
   background:var(--bg);display:flex;flex-direction:column;
   position:relative;overflow:hidden;
   border:1px solid var(--border2);
   box-shadow:0 0 80px rgba(0,0,0,.7);
   transition:background .35s,border-color .35s;
-  /* Rotate 90 degrees left */
-  transform: rotate(-90deg);
 }
 .board::after {
   content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
@@ -409,38 +406,37 @@ document.getElementById('slDown').addEventListener('click', ()=>setSceneLet(letI
 document.getElementById('tkUp').addEventListener('click',   ()=>setTake(take+1,'up',false));
 document.getElementById('tkDown').addEventListener('click', ()=>setTake(take-1,'down',false));
 
-// ---- SWIPE (Updated to use clientX because the UI is rotated -90deg) ----
+// ---- SWIPE (throttled — one step per 160ms minimum) ----
 function makeSwipeable(el, onUp, onDown, onReset){
-  let startX=null, moved=false, lastStep=0, holdTimer=null;
+  let startY=null, moved=false, lastStep=0, holdTimer=null;
   const THRESH=28, COOLDOWN=160;
 
-  function onStart(x){
-    startX=x; moved=false;
-    holdTimer=setTimeout(()=>{ moved=true; onReset(); startX=null; },600);
+  function onStart(y){
+    startY=y; moved=false;
+    holdTimer=setTimeout(()=>{ moved=true; onReset(); startY=null; },600);
   }
-  function onMove(x){
-    if(startX===null) return;
-    // dx > 0 means the physical touch moved Left (which translates to "Up" on a left-rotated UI)
-    const dx=startX-x; 
-    if(Math.abs(dx)<THRESH) return;
+  function onMove(y){
+    if(startY===null) return;
+    const dy=startY-y;
+    if(Math.abs(dy)<THRESH) return;
     const now=Date.now();
     if(now-lastStep < COOLDOWN) return;
     clearTimeout(holdTimer);
     moved=true; lastStep=now;
-    if(dx>0){ onUp(); startX=x; }
-    else    { onDown(); startX=x; }
+    if(dy>0){ onUp(); startY=y; }
+    else     { onDown(); startY=y; }
   }
   function onEnd(){
     clearTimeout(holdTimer);
-    startX=null; moved=false;
+    startY=null; moved=false;
   }
 
-  el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e.touches[0].clientX);},{passive:false});
-  el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e.touches[0].clientX);},{passive:false});
+  el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e.touches[0].clientY);},{passive:false});
+  el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e.touches[0].clientY);},{passive:false});
   el.addEventListener('touchend',  e=>{e.preventDefault();onEnd();},{passive:false});
-  el.addEventListener('mousedown', e=>onStart(e.clientX));
-  window.addEventListener('mousemove',e=>{if(startX!==null)onMove(e.clientX);});
-  window.addEventListener('mouseup', ()=>{if(startX!==null)onEnd();});
+  el.addEventListener('mousedown', e=>onStart(e.clientY));
+  window.addEventListener('mousemove',e=>{if(startY!==null)onMove(e.clientY);});
+  window.addEventListener('mouseup', ()=>{if(startY!==null)onEnd();});
 }
 
 makeSwipeable(snEl,
@@ -478,29 +474,4 @@ const sunPaths = `
   <circle cx="12" cy="12" r="4.5" fill="currentColor"/>
   <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
     <line x1="12" y1="2" x2="12" y2="4.5"/>
-    <line x1="12" y1="19.5" x2="12" y2="22"/>
-    <line x1="2" y1="12" x2="4.5" y2="12"/>
-    <line x1="19.5" y1="12" x2="22" y2="12"/>
-    <line x1="4.9" y1="4.9" x2="6.8" y2="6.8"/>
-    <line x1="17.2" y1="17.2" x2="19.1" y2="19.1"/>
-    <line x1="19.1" y1="4.9" x2="17.2" y2="6.8"/>
-    <line x1="6.8" y1="17.2" x2="4.9" y2="19.1"/>
-  </g>`;
-
-function updateThemeIcon(){
-  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
-  const ico = document.getElementById('themeIcon');
-  ico.style.color = 'var(--gold)';
-  ico.innerHTML = isDark ? moonPath : sunPaths;
-}
-
-updateThemeIcon();
-
-document.getElementById('themeBtn').addEventListener('click',()=>{
-  const html=document.documentElement;
-  html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
-  updateThemeIcon();
-});
-</script>
-</body>
-</html>
+    <line x1="12" y1="19.5" x2="12" 

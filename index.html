@@ -166,10 +166,6 @@ html,body {
 .going-down{animation:nudgeDown .16s ease-out;}
 @keyframes nudgeUp  {0%{transform:translateY(8px);opacity:.5}100%{transform:translateY(0);opacity:1}}
 @keyframes nudgeDown{0%{transform:translateY(-8px);opacity:.5}100%{transform:translateY(0);opacity:1}}
-.tap-gold {animation:tapGold .3s ease-out;}
-.tap-red  {animation:tapRed  .4s ease-out;}
-@keyframes tapGold{0%{color:var(--gold2)}100%{color:var(--text)}}
-@keyframes tapRed {0%{color:var(--red)}  100%{color:var(--text)}}
 
 /* BOTTOM */
 .bottom-row{
@@ -341,14 +337,12 @@ function loadState() {
       if(state.theme) document.documentElement.setAttribute('data-theme', state.theme);
     } catch(e) {}
   }
-  // Initialize UI with loaded values
   snEl.textContent = sceneNum;
   slEl.textContent = LETTERS[letIdx];
   tkEl.textContent = take;
   updateThemeIcon();
 }
 
-// Save state on text input changes
 prodInput.addEventListener('input', saveState);
 charInput.addEventListener('input', saveState);
 
@@ -391,21 +385,19 @@ document.getElementById('dateCell').textContent=
 
 // ---- ANIMATE ----
 function anim(el, cls){
-  el.classList.remove('going-up','going-down','tap-gold','tap-red'); void el.offsetWidth;
+  el.classList.remove('going-up','going-down'); void el.offsetWidth;
   el.classList.add(cls);
-  el.addEventListener('animationend',()=>el.classList.remove('going-up','going-down','tap-gold','tap-red'),{once:true});
+  el.addEventListener('animationend',()=>el.classList.remove('going-up','going-down'),{once:true});
 }
 
 // ---- UPDATERS ----
 function setSceneNum(n, dir, isReset){
   sceneNum=Math.max(1,Math.min(99,n));
   snEl.textContent=sceneNum;
-  anim(snEl, isReset ? 'tap-red' : (dir==='up' ? 'going-up' : 'going-down'));
+  if(!isReset) anim(snEl, dir==='up' ? 'going-up' : 'going-down');
   
-  // Reset the scene letter to A
   letIdx = 0;
   slEl.textContent = LETTERS[letIdx];
-  anim(slEl, 'tap-red');
   
   resetTakeQuiet();
   saveState();
@@ -414,7 +406,7 @@ function setSceneNum(n, dir, isReset){
 function setSceneLet(i, dir, isReset){
   letIdx=((i%LETTERS.length)+LETTERS.length)%LETTERS.length;
   slEl.textContent=LETTERS[letIdx];
-  anim(slEl, isReset ? 'tap-red' : (dir==='up' ? 'going-up' : 'going-down'));
+  if(!isReset) anim(slEl, dir==='up' ? 'going-up' : 'going-down');
   
   resetTakeQuiet();
   saveState();
@@ -422,12 +414,12 @@ function setSceneLet(i, dir, isReset){
 
 function setTake(n, dir, isReset){
   take=Math.max(1,n); tkEl.textContent=take;
-  anim(tkEl, isReset ? 'tap-red' : (dir==='up' ? 'going-up' : 'going-down'));
+  if(!isReset) anim(tkEl, dir==='up' ? 'going-up' : 'going-down');
   saveState();
 }
 
 function resetTakeQuiet(){
-  take=1; tkEl.textContent=1; anim(tkEl,'tap-red');
+  take=1; tkEl.textContent=1;
 }
 
 // ---- BUTTON HANDLERS ----
@@ -450,7 +442,6 @@ function makeSwipeable(el, onUp, onDown, onReset){
   }
 
   function onStart(e){
-    // Don't trigger swipe or double tap logic if clicking the tiny up/down arrows
     if(e.target.closest('.step-btn')) return;
 
     const now = Date.now();

@@ -77,12 +77,14 @@ html,body {
 }
 .prod-name-input{
   background:transparent;border:none;outline:none;
-  font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;
+  font-family:'Outfit',sans-serif;font-size:22px;
+  font-weight:600;
   color:var(--text);letter-spacing:.03em;width:100%;transition:color .35s;
 }
 .title-right{display:flex;align-items:stretch;border-left:1px solid var(--border2);}
 .timecode{
-  padding:0 14px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;
+  padding:0 14px;font-family:'Space Mono',monospace;font-size:18px;
+  font-weight:700;
   color:var(--gold);display:flex;align-items:center;letter-spacing:.08em;min-width:86px;
   transition:color .35s;
 }
@@ -94,7 +96,7 @@ html,body {
 }
 .mark-btn:active{filter:brightness(.85);transform:scale(.97);}
 
-/* MAIN GRID — character gets 40% of space */
+/* MAIN GRID */
 .main-grid {
   flex:1;display:grid;
   grid-template-columns: 2fr 1fr 1fr 0.9fr;
@@ -131,7 +133,6 @@ html,body {
 .scene-let-cell{background:var(--surface2);}
 .take-cell{background:var(--surface);}
 
-/* Each swipe cell layout: up-btn / big value / down-btn */
 .swipe-cell-inner{
   display:flex;flex-direction:column;align-items:center;
   justify-content:center;width:100%;height:100%;gap:0;
@@ -168,13 +169,6 @@ html,body {
 @keyframes tapGold{0%{color:var(--gold2)}100%{color:var(--text)}}
 @keyframes tapRed {0%{color:var(--red)}  100%{color:var(--text)}}
 
-.cell-hint{
-  position:absolute;bottom:5px;left:0;right:0;text-align:center;
-  font-size:7.5px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.11em;color:var(--text3);pointer-events:none;
-  transition:color .35s;
-}
-
 /* BOTTOM */
 .bottom-row{
   height:50px;display:flex;align-items:stretch;flex-shrink:0;
@@ -190,9 +184,8 @@ html,body {
   letter-spacing:.14em;color:var(--gold);opacity:.8;margin-bottom:2px;
   transition:color .35s;
 }
-.meta-date{font-size:13px;font-weight:600;color:var(--text2);transition:color .35s;}
+.meta-date{font-size:16px; font-weight:600;color:var(--text2);transition:color .35s;}
 
-/* Single theme button */
 .theme-btn{
   background:transparent;border:none;cursor:pointer;
   padding:0 20px;display:flex;align-items:center;justify-content:center;
@@ -203,33 +196,34 @@ html,body {
 .theme-btn:active{opacity:.6;}
 .theme-btn svg{width:24px;height:24px;display:block;}
 
-/* Flash / Toast */
+/* Flash */
 .flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none;z-index:20;}
 .flash.active{animation:flashAnim .45s ease-out forwards;}
 @keyframes flashAnim{0%{opacity:.8}100%{opacity:0}}
-.toast{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%) scale(.85);
-  background:var(--bg);border:1px solid var(--gold);color:var(--gold);
-  font-family:'Space Mono',monospace;font-size:11px;font-weight:700;
-  letter-spacing:.12em;padding:9px 20px;border-radius:3px;
-  pointer-events:none;z-index:30;opacity:0;white-space:nowrap;
-  transition:background .35s;
-}
-.toast.show{animation:toastAnim .95s ease-out forwards;}
-@keyframes toastAnim{
-  0%  {opacity:0;transform:translate(-50%,-50%) scale(.85)}
-  15% {opacity:1;transform:translate(-50%,-50%) scale(1)}
-  72% {opacity:1}
-  100%{opacity:0;transform:translate(-50%,-50%) scale(.95)}
-}
+
 input:focus,textarea:focus{outline:none;background:color-mix(in srgb,var(--gold) 8%,transparent);border-radius:2px;}
+
+/* Force landscape view on portrait screens */
+@media screen and (orientation: portrait) {
+  .board {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vh;
+    width: 100dvh;
+    height: 100vw;
+    max-width: none;
+    max-height: none;
+    transform: translate(-50%, -50%) rotate(90deg);
+    border: none;
+    border-radius: 0;
+  }
+}
 </style>
 </head>
 <body>
 <div class="board" id="board">
   <div class="flash" id="flash"></div>
-  <div class="toast"  id="toast"></div>
 
   <div class="clapper-top" id="clapperTop">
     <div class="stripes"></div>
@@ -244,7 +238,7 @@ input:focus,textarea:focus{outline:none;background:color-mix(in srgb,var(--gold)
   <div class="title-row">
     <div class="prod-wrap">
       <div class="prod-dot"></div>
-      <input class="prod-name-input" type="text" value="Winter Promo 24" spellcheck="false"/>
+      <input class="prod-name-input" id="prodInput" type="text" value="Winter Promo 24" spellcheck="false"/>
     </div>
     <div class="title-right">
       <div class="timecode" id="timecode">00:00:00</div>
@@ -253,13 +247,11 @@ input:focus,textarea:focus{outline:none;background:color-mix(in srgb,var(--gold)
   </div>
 
   <div class="main-grid">
-    <!-- CHARACTER -->
     <div class="cell char-cell">
       <span class="cell-label">Character</span>
-      <textarea class="char-name-input" spellcheck="false" rows="2" style="padding-top:18px;">John Doe</textarea>
+      <textarea class="char-name-input" id="charInput" spellcheck="false" rows="2" style="padding-top:18px;">John Doe</textarea>
     </div>
 
-    <!-- SCENE NUMBER -->
     <div class="cell scene-num-cell">
       <span class="cell-label">Scene</span>
       <div class="swipe-cell-inner">
@@ -271,25 +263,21 @@ input:focus,textarea:focus{outline:none;background:color-mix(in srgb,var(--gold)
           <svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
-      <span class="cell-hint">SWIPE OR TAP · HOLD=RESET</span>
     </div>
 
-    <!-- SCENE LETTER -->
     <div class="cell scene-let-cell">
       <span class="cell-label" style="opacity:0">·</span>
       <div class="swipe-cell-inner">
         <button class="step-btn" id="slUp">
           <svg viewBox="0 0 12 12" fill="none"><path d="M2 8.5L6 3.5L10 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <div class="swipe-val" id="sceneLet">B</div>
+        <div class="swipe-val" id="sceneLet">A</div>
         <button class="step-btn" id="slDown">
           <svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
-      <span class="cell-hint">SWIPE OR TAP · HOLD=RESET</span>
     </div>
 
-    <!-- TAKE -->
     <div class="cell take-cell">
       <span class="cell-label">Take</span>
       <div class="swipe-cell-inner">
@@ -301,7 +289,6 @@ input:focus,textarea:focus{outline:none;background:color-mix(in srgb,var(--gold)
           <svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
-      <span class="cell-hint">SWIPE OR TAP · HOLD=RESET</span>
     </div>
   </div>
 
@@ -311,13 +298,59 @@ input:focus,textarea:focus{outline:none;background:color-mix(in srgb,var(--gold)
       <div class="meta-date" id="dateCell"></div>
     </div>
     <button class="theme-btn" id="themeBtn" title="Toggle theme">
-      <!-- Icon rendered by JS -->
       <svg id="themeIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
     </button>
   </div>
 </div>
 
 <script>
+// ---- STATE & LOCAL STORAGE ----
+let sceneNum=1;
+const LETTERS=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+let letIdx=0; 
+let take=1;
+
+const snEl=document.getElementById('sceneNum');
+const slEl=document.getElementById('sceneLet');
+const tkEl=document.getElementById('takeVal');
+const prodInput=document.getElementById('prodInput');
+const charInput=document.getElementById('charInput');
+
+function saveState() {
+  const state = {
+    sceneNum, letIdx, take,
+    prod: prodInput.value,
+    char: charInput.value,
+    theme: document.documentElement.getAttribute('data-theme')
+  };
+  localStorage.setItem('clapper_state', JSON.stringify(state));
+}
+
+function loadState() {
+  const saved = localStorage.getItem('clapper_state');
+  if(saved) {
+    try {
+      const state = JSON.parse(saved);
+      if(state.sceneNum !== undefined) sceneNum = state.sceneNum;
+      if(state.letIdx !== undefined) letIdx = state.letIdx;
+      if(state.take !== undefined) take = state.take;
+      if(state.prod !== undefined) prodInput.value = state.prod;
+      if(state.char !== undefined) charInput.value = state.char;
+      if(state.theme) document.documentElement.setAttribute('data-theme', state.theme);
+    } catch(e) {}
+  }
+  // Initialize UI with loaded values
+  snEl.textContent = sceneNum;
+  slEl.textContent = LETTERS[letIdx];
+  tkEl.textContent = take;
+  updateThemeIcon();
+}
+
+// Save state on text input changes
+prodInput.addEventListener('input', saveState);
+charInput.addEventListener('input', saveState);
+
+
 // ---- AUDIO ----
 const actx = new (window.AudioContext || window.webkitAudioContext)();
 function resumeAudio(){ if(actx.state==='suspended') actx.resume(); }
@@ -354,13 +387,6 @@ const nd=new Date();
 document.getElementById('dateCell').textContent=
   `${String(nd.getDate()).padStart(2,'0')} ${MN[nd.getMonth()]} ${nd.getFullYear()}`;
 
-// ---- TOAST ----
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
-  t.addEventListener('animationend',()=>t.classList.remove('show'),{once:true});
-}
-
 // ---- ANIMATE ----
 function anim(el, cls){
   el.classList.remove('going-up','going-down','tap-gold','tap-red'); void el.offsetWidth;
@@ -368,32 +394,36 @@ function anim(el, cls){
   el.addEventListener('animationend',()=>el.classList.remove('going-up','going-down','tap-gold','tap-red'),{once:true});
 }
 
-// ---- STATE ----
-let sceneNum=1;
-const LETTERS=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
-let letIdx=1;
-let take=1;
-
-const snEl=document.getElementById('sceneNum');
-const slEl=document.getElementById('sceneLet');
-const tkEl=document.getElementById('takeVal');
-
+// ---- UPDATERS ----
 function setSceneNum(n, dir, isReset){
   sceneNum=Math.max(1,Math.min(99,n));
   snEl.textContent=sceneNum;
   anim(snEl, isReset ? 'tap-red' : (dir==='up' ? 'going-up' : 'going-down'));
-  if(!isReset) resetTakeQuiet();
+  
+  // Reset the scene letter to A
+  letIdx = 0;
+  slEl.textContent = LETTERS[letIdx];
+  anim(slEl, 'tap-red');
+  
+  resetTakeQuiet();
+  saveState();
 }
+
 function setSceneLet(i, dir, isReset){
   letIdx=((i%LETTERS.length)+LETTERS.length)%LETTERS.length;
   slEl.textContent=LETTERS[letIdx];
   anim(slEl, isReset ? 'tap-red' : (dir==='up' ? 'going-up' : 'going-down'));
-  if(!isReset) resetTakeQuiet();
+  
+  resetTakeQuiet();
+  saveState();
 }
+
 function setTake(n, dir, isReset){
   take=Math.max(1,n); tkEl.textContent=take;
   anim(tkEl, isReset ? 'tap-red' : (dir==='up' ? 'going-up' : 'going-down'));
+  saveState();
 }
+
 function resetTakeQuiet(){
   take=1; tkEl.textContent=1; anim(tkEl,'tap-red');
 }
@@ -406,53 +436,72 @@ document.getElementById('slDown').addEventListener('click', ()=>setSceneLet(letI
 document.getElementById('tkUp').addEventListener('click',   ()=>setTake(take+1,'up',false));
 document.getElementById('tkDown').addEventListener('click', ()=>setTake(take-1,'down',false));
 
-// ---- SWIPE (throttled — one step per 160ms minimum) ----
+// ---- SWIPE (throttled & orientation-aware + DOUBLE TAP) ----
 function makeSwipeable(el, onUp, onDown, onReset){
-  let startY=null, moved=false, lastStep=0, holdTimer=null;
-  const THRESH=28, COOLDOWN=160;
+  let startPos=null, moved=false, lastStep=0, lastTap=0;
+  const THRESH=28, COOLDOWN=160, DBL_TAP_DELAY=300;
 
-  function onStart(y){
-    startY=y; moved=false;
-    holdTimer=setTimeout(()=>{ moved=true; onReset(); startY=null; },600);
+  function getPos(e) {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const touch = e.touches ? e.touches[0] : e;
+    return isPortrait ? -touch.clientX : touch.clientY;
   }
-  function onMove(y){
-    if(startY===null) return;
-    const dy=startY-y;
+
+  function onStart(e){
+    // Don't trigger swipe or double tap logic if clicking the tiny up/down arrows
+    if(e.target.closest('.step-btn')) return;
+
+    const now = Date.now();
+    if (now - lastTap < DBL_TAP_DELAY) {
+      onReset();
+      lastTap = 0;
+      startPos = null;
+      return;
+    }
+    
+    lastTap = now;
+    startPos=getPos(e); moved=false;
+  }
+  function onMove(e){
+    if(startPos===null) return;
+    const pos=getPos(e);
+    const dy=startPos-pos;
+    
     if(Math.abs(dy)<THRESH) return;
     const now=Date.now();
     if(now-lastStep < COOLDOWN) return;
-    clearTimeout(holdTimer);
+    
     moved=true; lastStep=now;
-    if(dy>0){ onUp(); startY=y; }
-    else     { onDown(); startY=y; }
+    
+    if(dy>0){ onUp(); startPos=pos; }
+    else    { onDown(); startPos=pos; }
   }
   function onEnd(){
-    clearTimeout(holdTimer);
-    startY=null; moved=false;
+    startPos=null; moved=false;
   }
 
-  el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e.touches[0].clientY);},{passive:false});
-  el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e.touches[0].clientY);},{passive:false});
+  el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e);},{passive:false});
+  el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e);},{passive:false});
   el.addEventListener('touchend',  e=>{e.preventDefault();onEnd();},{passive:false});
-  el.addEventListener('mousedown', e=>onStart(e.clientY));
-  window.addEventListener('mousemove',e=>{if(startY!==null)onMove(e.clientY);});
-  window.addEventListener('mouseup', ()=>{if(startY!==null)onEnd();});
+  el.addEventListener('mousedown', e=>onStart(e));
+  window.addEventListener('mousemove',e=>{if(startPos!==null)onMove(e);});
+  window.addEventListener('mouseup', ()=>{if(startPos!==null)onEnd();});
 }
 
 makeSwipeable(snEl,
   ()=>setSceneNum(sceneNum+1,'up',false),
   ()=>setSceneNum(sceneNum-1,'down',false),
-  ()=>{ setSceneNum(1,'up',true); toast('SCENE # RESET'); }
+  ()=>setSceneNum(1,'up',true)
 );
 makeSwipeable(slEl,
   ()=>setSceneLet(letIdx+1,'up',false),
   ()=>setSceneLet(letIdx-1,'down',false),
-  ()=>{ setSceneLet(0,'up',true); toast('SCENE LETTER RESET'); }
+  ()=>setSceneLet(0,'up',true)
 );
 makeSwipeable(tkEl,
   ()=>setTake(take+1,'up',false),
   ()=>setTake(take-1,'down',false),
-  ()=>{ setTake(1,'up',true); toast('TAKE RESET'); }
+  ()=>setTake(1,'up',true)
 );
 
 // ---- CLAP ----
@@ -490,13 +539,16 @@ function updateThemeIcon(){
   ico.innerHTML = isDark ? moonPath : sunPaths;
 }
 
-updateThemeIcon();
-
 document.getElementById('themeBtn').addEventListener('click',()=>{
   const html=document.documentElement;
   html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
   updateThemeIcon();
+  saveState();
 });
+
+// LOAD SAVED STATE ON STARTUP
+loadState();
+
 </script>
 </body>
 </html>

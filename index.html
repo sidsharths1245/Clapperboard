@@ -143,11 +143,13 @@ html,body {
   display:flex;align-items:center;justify-content:center;
   background:transparent;border:none;cursor:pointer;
   color:var(--text3);font-size:11px;
-  transition:color .15s,background .15s;
+  transition:color .15s;
   user-select:none;-webkit-tap-highlight-color:transparent;
 }
-.step-btn:hover{color:var(--gold);background:color-mix(in srgb,var(--gold) 7%,transparent);}
-.step-btn:active{color:var(--gold2);background:color-mix(in srgb,var(--gold) 14%,transparent);}
+@media (hover: hover) {
+  .step-btn:hover { color: var(--gold); }
+}
+.step-btn:active { color: var(--gold2); }
 
 .step-btn svg{width:12px;height:12px;display:block;pointer-events:none;}
 

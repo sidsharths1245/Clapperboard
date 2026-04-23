@@ -1,547 +1,1023 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Clapperboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Production Slate & Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-[data-theme="dark"] {
-  --bg:#0D0D0F; --surface:#161619; --surface2:#1E1E23;
-  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
-  --text:#F0EEE8; --text2:#9896A0; --text3:#3A3847;
-  --gold:#E8B84B; --gold2:#F5CC6A; --red:#E84B4B;
-  --body-bg:#050506; --sl:#F0EEE8; --sd:#111114;
-  --scan:rgba(0,0,0,0.07); --mark-fg:#0D0D0F;
-}
-[data-theme="light"] {
-  --bg:#F4F2EC; --surface:#ECEAE3; --surface2:#E0DDD5;
-  --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.15);
-  --text:#1A1916; --text2:#6B6860; --text3:#C0BDB5;
-  --gold:#A87820; --gold2:#C09030; --red:#C0392B;
-  --body-bg:#D5D2CA; --sl:#1A1916; --sd:#F0EEE8;
-  --scan:rgba(0,0,0,0.025); --mark-fg:#F4F2EC;
-}
+        /* THEME VARIABLES */
+        [data-theme="dark"] {
+          --bg:#0D0D0F; --surface:#161619; --surface2:#1E1E23;
+          --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
+          --text:#F0EEE8; --text2:#9896A0; --text3:#3A3847;
+          --gold:#E8B84B; --gold2:#F5CC6A; --red:#E84B4B; --green: #34d399;
+          --body-bg:#050506; --sl:#F0EEE8; --sd:#111114;
+          --scan:rgba(0,0,0,0.07); --mark-fg:#0D0D0F;
+        }
+        [data-theme="light"] {
+          --bg:#F4F2EC; --surface:#ECEAE3; --surface2:#E0DDD5;
+          --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.15);
+          --text:#1A1916; --text2:#6B6860; --text3:#C0BDB5;
+          --gold:#A87820; --gold2:#C09030; --red:#C0392B; --green: #059669;
+          --body-bg:#D5D2CA; --sl:#1A1916; --sd:#F0EEE8;
+          --scan:rgba(0,0,0,0.025); --mark-fg:#F4F2EC;
+        }
 
-html,body {
-  width:100%;height:100%;background:var(--body-bg);
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;font-family:'Outfit',sans-serif;transition:background .35s;
-}
+        html, body {
+            width: 100%; height: 100%; background: var(--body-bg); color: var(--text);
+            font-family: 'Outfit', sans-serif; transition: background .35s;
+            overflow: hidden; 
+        }
 
-.board {
-  width:100vw;height:100vh;max-width:960px;max-height:520px;
-  background:var(--bg);display:flex;flex-direction:column;
-  position:relative;overflow:hidden;
-  border:1px solid var(--border2);
-  box-shadow:0 0 80px rgba(0,0,0,.7);
-  transition:background .35s,border-color .35s;
-}
-.board::after {
-  content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
-  background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,var(--scan) 3px,var(--scan) 4px);
-}
+        /* ----- APP SLIDER (Swipe Navigation) ----- */
+        .app-slider {
+            display: flex;
+            width: 200vw;
+            height: 100vh;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .app-view {
+            width: 100vw;
+            height: 100vh;
+            flex-shrink: 0;
+            position: relative;
+        }
 
-/* CLAPPER */
-.clapper-top {
-  height:46px;display:flex;flex-shrink:0;
-  position:relative;overflow:hidden;cursor:pointer;user-select:none;
-  border-bottom:1px solid var(--border2);
-}
-.stripes {
-  flex:1;
-  background:repeating-linear-gradient(-52deg,var(--sl) 0,var(--sl) 14px,var(--sd) 14px,var(--sd) 28px);
-  transition:background .35s;
-}
-.color-bars{width:240px;display:flex;flex-shrink:0;border-left:1px solid var(--border2);}
-.bar{flex:1}
-.b1{background:#555}.b2{background:#C2B800}.b3{background:#00B8B8}
-.b4{background:#00B800}.b5{background:#B800B8}.b6{background:#B80000}
-.b7{background:#0000B8}.b8{background:#1a1a1a}.b9{background:#666}.b10{background:#ddd}
-.clapper-top.clapping{animation:clap .2s cubic-bezier(.17,.67,.42,.98);transform-origin:0 50%;}
-@keyframes clap{0%{transform:rotate(0)}38%{transform:rotate(-12deg)}100%{transform:rotate(0)}}
+        /* ----- TRACKER VIEW CSS ----- */
+        #trackerView { overflow-y: auto; overflow-x: hidden; padding: 10px; padding-bottom: 30px; }
+        
+        .header-card {
+            background: var(--surface); padding: 15px; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 10px;
+            position: sticky; top: 0px; z-index: 100; border: 1px solid var(--border);
+            transition: background .35s, border .35s;
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .header-title { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.2em; color: var(--text); font-weight: 700; }
+        
+        .action-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-small { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, opacity 0.2s; }
+        .btn-small:active { opacity: 0.7; }
+        
+        .icon-btn { padding: 8px; min-width: 38px; min-height: 38px; }
+        .icon-btn svg { width: 18px; height: 18px; display: block; }
+        
+        .clear-btn { background: rgba(232, 75, 75, 0.15); color: var(--red); border-color: transparent; }
+        .primary-btn { background: var(--gold); color: var(--mark-fg); border-color: var(--gold); }
+        .filter-active { background: var(--gold); color: var(--mark-fg); border-color: var(--gold); }
 
-/* TITLE */
-.title-row {
-  height:42px;display:flex;align-items:stretch;flex-shrink:0;
-  border-bottom:1px solid var(--border2);background:var(--surface);
-  transition:background .35s,border-color .35s;
-}
-.prod-wrap{flex:1;display:flex;align-items:center;padding:0 16px;gap:10px;}
-.prod-dot{
-  width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0;
-  box-shadow:0 0 8px color-mix(in srgb,var(--gold) 55%,transparent);
-  transition:background .35s;
-}
-.prod-name-input{
-  background:transparent;border:none;outline:none;
-  font-family:'Outfit',sans-serif;font-size:22px;
-  font-weight:600;
-  color:var(--text);letter-spacing:.03em;width:100%;transition:color .35s;
-}
-.title-right{display:flex;align-items:stretch;border-left:1px solid var(--border2);}
-.timecode{
-  padding:0 14px;font-family:'Space Mono',monospace;font-size:18px;
-  font-weight:700;
-  color:var(--gold);display:flex;align-items:center;letter-spacing:.08em;min-width:86px;
-  transition:color .35s;
-}
-.mark-btn{
-  background:var(--gold);color:var(--mark-fg);border:none;
-  padding:0 26px;font-family:'Bebas Neue',sans-serif;font-size:21px;
-  letter-spacing:.16em;cursor:pointer;border-left:1px solid var(--border2);
-  transition:filter .12s,transform .08s,background .35s,color .35s;
-}
-.mark-btn:active{filter:brightness(.85);transform:scale(.97);}
+        .filter-section { display: flex; gap: 8px; overflow-x: auto; padding-top: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--border); margin-top: 15px; transition: border-color .35s; }
+        .filter-group { display: flex; flex-direction: column; min-width: 90px; flex: 1; }
+        .filter-group label { font-size: 0.75em; font-weight: 600; color: var(--text2); margin-bottom: 3px; }
+        .filter-group select {
+            padding: 8px; border: 1px solid var(--border2); border-radius: 6px; font-size: 0.9em;
+            background-color: var(--bg); color: var(--text); -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239896A0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right .5em top 50%; background-size: .6em auto;
+        }
+        
+        select option[disabled] { color: var(--text3); font-style: italic; background: var(--surface2); }
 
-/* MAIN GRID */
-.main-grid {
-  flex:1;display:grid;
-  grid-template-columns: 2fr 1fr 1fr 0.9fr;
-  min-height:0;border-bottom:1px solid var(--border2);
-}
+        .card { background: var(--surface); border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-left: 5px solid var(--gold); overflow: hidden; transition: background .35s; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; transition: background-color 0.2s; }
+        .card-header:active { background-color: var(--surface2); }
+        .card-header-left { display: flex; align-items: center; gap: 10px; }
+        .code-title { font-weight: 800; font-size: 1.1em; color: var(--text); }
+        .scene-badge { background: var(--surface2); color: var(--text2); padding: 4px 10px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
+        .toggle-icon { color: var(--text2); display: flex; align-items: center; transition: transform 0.3s ease; }
+        
+        .card-body { padding: 0 15px 15px 15px; display: block; }
+        .card.collapsed .card-body { display: none; }
+        .card.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .card:not(.collapsed) .card-header { border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 
-.cell{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  position:relative;border-right:1px solid var(--border2);padding:8px 10px;
-  transition:background .35s,border-color .35s;overflow:hidden;
-}
-.cell:last-child{border-right:none;}
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9em; }
+        .info-full { grid-column: span 2; }
+        .label { font-size: 0.8em; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: block; }
+        .value { color: var(--text); font-weight: 500; }
+        .desc-text { color: var(--text); background: var(--bg); padding: 8px; border-radius: 6px; font-size: 0.95em; border: 1px solid var(--border); }
+        
+        .input-section { background: var(--surface2); padding: 12px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group.full-width { grid-column: span 2; }
+        .input-group label { font-size: 0.85em; font-weight: 600; margin-bottom: 5px; color: var(--text2); }
+        .input-group select {
+            padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1em; background: var(--bg); color: var(--text); -webkit-appearance: none; 
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239896A0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto;
+        }
 
-.cell-label{
-  font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.18em;color:var(--gold);opacity:.85;
-  position:absolute;top:10px;left:50%;transform:translateX(-50%);
-  pointer-events:none;white-space:nowrap;transition:color .35s;
-}
+        .send-slate-btn {
+            width: 100%; background: var(--gold); color: var(--mark-fg); border: none; padding: 12px; margin-top: 15px;
+            border-radius: 8px; font-size: 1.05em; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .send-slate-btn:active { opacity: 0.8; }
+        
+        .status-done { border-left-color: var(--green) !important; }
+        .status-pending { border-left-color: var(--gold2) !important; }
+        .status-skipped { border-left-color: var(--red) !important; }
+        
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); display: flex; flex-direction: column; align-items: center; gap: 15px; }
 
-/* CHARACTER */
-.char-cell{background:var(--surface);}
-.char-name-input{
-  background:transparent;border:none;outline:none;
-  font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1.1;
-  color:var(--text);letter-spacing:.04em;text-align:center;
-  width:100%;transition:color .35s;
-  word-break:break-word;overflow-wrap:break-word;white-space:normal;
-  resize:none;
-}
+        /* ----- SLATE VIEW CSS ----- */
+        #slateView { align-items: center; justify-content: center; display: flex; overflow: hidden; }
 
-/* SWIPE CELLS */
-.scene-num-cell{background:var(--surface2);}
-.scene-let-cell{background:var(--surface2);}
-.take-cell{background:var(--surface);}
+        .board {
+            width:100vw; height:100vh; max-width:960px; max-height:520px;
+            background:var(--bg); display:flex; flex-direction:column; position:relative; overflow:hidden;
+            border:1px solid var(--border2); box-shadow:0 0 80px rgba(0,0,0,.7); transition:background .35s,border-color .35s;
+        }
+        .board::after {
+            content:''; position:absolute; inset:0; pointer-events:none; z-index:5;
+            background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,var(--scan) 3px,var(--scan) 4px);
+        }
 
-.swipe-cell-inner{
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:center;width:100%;height:100%;gap:0;
-}
+        /* CLAPPER */
+        .clapper-top { height:46px; display:flex; flex-shrink:0; position:relative; overflow:hidden; cursor:pointer; user-select:none; border-bottom:1px solid var(--border2); }
+        .stripes { flex:1; background:repeating-linear-gradient(-52deg,var(--sl) 0,var(--sl) 14px,var(--sd) 14px,var(--sd) 28px); transition:background .35s; }
+        .color-bars{width:240px; display:flex; flex-shrink:0; border-left:1px solid var(--border2);}
+        .bar{flex:1} .b1{background:#555} .b2{background:#C2B800} .b3{background:#00B8B8} .b4{background:#00B800} .b5{background:#B800B8} .b6{background:#B80000} .b7{background:#0000B8} .b8{background:#1a1a1a} .b9{background:#666} .b10{background:#ddd}
+        .clapper-top.clapping{animation:clap .2s cubic-bezier(.17,.67,.42,.98); transform-origin:0 50%;}
+        @keyframes clap{0%{transform:rotate(0)}38%{transform:rotate(-12deg)}100%{transform:rotate(0)}}
 
-.step-btn{
-  width:100%;flex:0 0 28%;
-  display:flex;align-items:center;justify-content:center;
-  background:transparent;border:none;cursor:pointer;
-  color:var(--text3);font-size:11px;
-  transition:color .15s;
-  user-select:none;-webkit-tap-highlight-color:transparent;
-}
-@media (hover: hover) {
-  .step-btn:hover { color: var(--gold); }
-}
-.step-btn:active { color: var(--gold2); }
+        /* TITLE */
+        .title-row { height:42px; display:flex; align-items:stretch; flex-shrink:0; border-bottom:1px solid var(--border2); background:var(--surface); transition:background .35s,border-color .35s; }
+        .prod-wrap{flex:1;display:flex;align-items:center;padding:0 16px;gap:10px;}
+        .prod-dot{ width:7px; height:7px; border-radius:50%; background:var(--gold); flex-shrink:0; box-shadow:0 0 8px color-mix(in srgb,var(--gold) 55%,transparent); transition:background .35s; }
+        .prod-name-input{ background:transparent; border:none; outline:none; font-family:'Outfit',sans-serif; font-size:22px; font-weight:600; color:var(--text); letter-spacing:.03em; width:100%; transition:color .35s; }
+        .title-right{display:flex;align-items:stretch;border-left:1px solid var(--border2);}
+        .timecode{ padding:0 14px; font-family:'Space Mono',monospace; font-size:18px; font-weight:700; color:var(--gold); display:flex; align-items:center; letter-spacing:.08em; min-width:86px; transition:color .35s; }
+        .mark-btn{ background:var(--gold); color:var(--mark-fg); border:none; padding:0 26px; font-family:'Bebas Neue',sans-serif; font-size:21px; letter-spacing:.16em; cursor:pointer; border-left:1px solid var(--border2); transition:filter .12s,transform .08s,background .35s,color .35s; }
+        .mark-btn:active{filter:brightness(.85);transform:scale(.97);}
 
-.step-btn svg{width:12px;height:12px;display:block;pointer-events:none;}
+        /* MAIN GRID */
+        .main-grid { flex:1; display:grid; grid-template-columns: 2fr 1fr 1fr 0.9fr; min-height:0; border-bottom:1px solid var(--border2); }
+        .cell{ display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; border-right:1px solid var(--border2); padding:8px 10px; transition:background .35s,border-color .35s; overflow:hidden; }
+        .cell:last-child{border-right:none;}
+        .cell-label{ font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:var(--gold); opacity:.85; position:absolute; top:10px; left:50%; transform:translateX(-50%); pointer-events:none; white-space:nowrap; transition:color .35s; }
 
-.swipe-val{
-  flex:0 0 auto;
-  font-family:'Bebas Neue',sans-serif;font-size:80px;line-height:1;
-  color:var(--text);user-select:none;touch-action:none;
-  cursor:ns-resize;transition:color .15s;
-  text-align:center;
-}
+        /* CHARACTER */
+        .char-cell{background:var(--surface);}
+        .char-name-input{ background:transparent; border:none; outline:none; font-family:'Bebas Neue',sans-serif; font-size:42px; line-height:1.1; color:var(--text); letter-spacing:.04em; text-align:center; width:100%; transition:color .35s; word-break:break-word; overflow-wrap:break-word; white-space:normal; resize:none; }
 
-/* Animations */
-.going-up  {animation:nudgeUp   .16s ease-out;}
-.going-down{animation:nudgeDown .16s ease-out;}
-@keyframes nudgeUp  {0%{transform:translateY(8px);opacity:.5}100%{transform:translateY(0);opacity:1}}
-@keyframes nudgeDown{0%{transform:translateY(-8px);opacity:.5}100%{transform:translateY(0);opacity:1}}
+        /* SWIPE CELLS */
+        .scene-num-cell{background:var(--surface2);} .scene-let-cell{background:var(--surface2);} .take-cell{background:var(--surface);}
+        .swipe-cell-inner{ display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; gap:0; }
+        .step-btn{ width:100%; flex:0 0 28%; display:flex; align-items:center; justify-content:center; background:transparent; border:none; cursor:pointer; color:var(--text3); font-size:11px; transition:color .15s; user-select:none; -webkit-tap-highlight-color:transparent; }
+        @media (hover: hover) { .step-btn:hover { color: var(--gold); } }
+        .step-btn:active { color: var(--gold2); }
+        .step-btn svg{width:12px;height:12px;display:block;pointer-events:none;}
+        .swipe-val{ flex:0 0 auto; font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:1; color:var(--text); user-select:none; touch-action:none; cursor:ns-resize; transition:color .15s; text-align:center; }
 
-/* BOTTOM */
-.bottom-row{
-  height:50px;display:flex;align-items:stretch;flex-shrink:0;
-  background:var(--surface);transition:background .35s;
-}
-.meta-cell{
-  display:flex;flex-direction:column;justify-content:center;
-  padding:5px 16px;border-right:1px solid var(--border);
-  flex:1;transition:border-color .35s;
-}
-.meta-label{
-  font-size:8.5px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.14em;color:var(--gold);opacity:.8;margin-bottom:2px;
-  transition:color .35s;
-}
-.meta-date{font-size:16px; font-weight:600;color:var(--text2);transition:color .35s;}
+        .going-up  {animation:nudgeUp   .16s ease-out;} .going-down{animation:nudgeDown .16s ease-out;}
+        @keyframes nudgeUp  {0%{transform:translateY(8px);opacity:.5}100%{transform:translateY(0);opacity:1}}
+        @keyframes nudgeDown{0%{transform:translateY(-8px);opacity:.5}100%{transform:translateY(0);opacity:1}}
 
-.theme-btn{
-  background:transparent;border:none;cursor:pointer;
-  padding:0 20px;display:flex;align-items:center;justify-content:center;
-  border-left:1px solid var(--border);
-  transition:border-color .35s,opacity .15s;
-  flex-shrink:0;
-}
-.theme-btn:active{opacity:.6;}
-.theme-btn svg{width:24px;height:24px;display:block;}
+        /* BOTTOM */
+        .bottom-row{ height:50px; display:flex; align-items:stretch; flex-shrink:0; background:var(--surface); transition:background .35s; }
+        .meta-cell{ display:flex; flex-direction:column; justify-content:center; padding:5px 16px; border-right:1px solid var(--border); flex:1; transition:border-color .35s; }
+        .meta-label{ font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--gold); opacity:.8; margin-bottom:2px; transition:color .35s; }
+        .meta-date{font-size:16px; font-weight:600; color:var(--text2); transition:color .35s;}
+        .theme-btn{ background:transparent; border:none; cursor:pointer; padding:0 20px; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--border); transition:border-color .35s,opacity .15s; flex-shrink:0; }
+        .theme-btn:active{opacity:.6;} .theme-btn svg{width:24px;height:24px;display:block;}
 
-/* Flash */
-.flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none;z-index:20;}
-.flash.active{animation:flashAnim .45s ease-out forwards;}
-@keyframes flashAnim{0%{opacity:.8}100%{opacity:0}}
+        .flash{position:absolute; inset:0; background:white; opacity:0; pointer-events:none; z-index:20;}
+        .flash.active{animation:flashAnim .45s ease-out forwards;}
+        @keyframes flashAnim{0%{opacity:.8}100%{opacity:0}}
+        input:focus,textarea:focus{outline:none;background:color-mix(in srgb,var(--gold) 8%,transparent);border-radius:2px;}
 
-input:focus,textarea:focus{outline:none;background:color-mix(in srgb,var(--gold) 8%,transparent);border-radius:2px;}
-
-/* Force landscape view on portrait screens */
-@media screen and (orientation: portrait) {
-  .board {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100vh;
-    width: 100dvh;
-    height: 100vw;
-    max-width: none;
-    max-height: none;
-    transform: translate(-50%, -50%) rotate(90deg);
-    border: none;
-    border-radius: 0;
-  }
-}
-</style>
+        /* Orientation handling */
+        @media screen and (orientation: portrait) {
+            .board {
+                position: absolute; top: 50%; left: 50%;
+                width: 100vh; height: 100vw;
+                max-width: none; max-height: none;
+                transform: translate(-50%, -50%) rotate(90deg);
+                border: none; border-radius: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="board" id="board">
-  <div class="flash" id="flash"></div>
 
-  <div class="clapper-top" id="clapperTop">
-    <div class="stripes"></div>
-    <div class="color-bars">
-      <div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div>
-      <div class="bar b4"></div><div class="bar b5"></div><div class="bar b6"></div>
-      <div class="bar b7"></div><div class="bar b8"></div><div class="bar b9"></div>
-      <div class="bar b10"></div>
+    <div class="app-slider" id="appSlider">
+
+        <div id="trackerView" class="app-view">
+            <div class="header-card">
+                <div class="header-top">
+                    <h2 class="header-title">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                        Shot Tracker
+                    </h2>
+                    
+                    <div class="action-btns" id="topActionBtns">
+                        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+                        
+                        <button class="btn-small icon-btn primary-btn" title="Import" onclick="document.getElementById('fileInput').click()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </button>
+                        
+                        <button class="btn-small icon-btn primary-btn" id="exportBtn" title="Export" onclick="exportData()" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </button>
+                        
+                        <button class="btn-small icon-btn" id="filterToggleBtn" title="Filters" onclick="toggleFilters()" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                        </button>
+
+                        <button class="btn-small icon-btn" id="toggleAllBtn" title="Toggle Collapse" onclick="toggleAllCards()" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 15 12 20 7 15"/><polyline points="7 9 12 4 17 9"/></svg>
+                        </button>
+                        
+                        <button class="btn-small icon-btn clear-btn" id="clearBtn" title="Clear Data" onclick="clearLocalData()" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filter-section" id="filterSection" style="display: none;">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="filterStatus" onchange="applyFilters()">
+                            <option value="all">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="done">Done</option>
+                            <option value="skipped">Skipped</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Scene</label>
+                        <select id="filterScene" onchange="applyFilters()"><option value="all">All</option></select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Location</label>
+                        <select id="filterLocation" onchange="applyFilters()"><option value="all">All</option></select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Character</label>
+                        <select id="filterCharacter" onchange="applyFilters()"><option value="all">All</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cardsContainer">
+                <div class="empty-state" id="emptyState">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                    Upload your shots list to begin.
+                </div>
+            </div>
+        </div>
+
+        <div id="slateView" class="app-view">
+            <div class="board" id="board">
+                <div class="flash" id="flash"></div>
+
+                <div class="clapper-top" id="clapperTop">
+                    <div class="stripes"></div>
+                    <div class="color-bars">
+                        <div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div>
+                        <div class="bar b4"></div><div class="bar b5"></div><div class="bar b6"></div>
+                        <div class="bar b7"></div><div class="bar b8"></div><div class="bar b9"></div>
+                        <div class="bar b10"></div>
+                    </div>
+                </div>
+
+                <div class="title-row">
+                    <div class="prod-wrap">
+                        <div class="prod-dot"></div>
+                        <input class="prod-name-input" id="prodInput" type="text" value="Production Name" spellcheck="false"/>
+                    </div>
+                    <div class="title-right">
+                        <div class="timecode" id="timecode">00:00:00</div>
+                        <button class="mark-btn" id="markBtn">DONE</button>
+                    </div>
+                </div>
+
+                <div class="main-grid">
+                    <div class="cell char-cell">
+                        <span class="cell-label">Character</span>
+                        <textarea class="char-name-input" id="charInput" spellcheck="false" rows="1">Cast</textarea>
+                    </div>
+
+                    <div class="cell scene-num-cell">
+                        <span class="cell-label">Scene</span>
+                        <div class="swipe-cell-inner">
+                            <button class="step-btn" id="snUp"><svg viewBox="0 0 12 12" fill="none"><path d="M2 8.5L6 3.5L10 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                            <div class="swipe-val" id="sceneNum">1</div>
+                            <button class="step-btn" id="snDown"><svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                        </div>
+                    </div>
+
+                    <div class="cell scene-let-cell">
+                        <span class="cell-label" style="opacity:0">·</span>
+                        <div class="swipe-cell-inner">
+                            <button class="step-btn" id="slUp"><svg viewBox="0 0 12 12" fill="none"><path d="M2 8.5L6 3.5L10 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                            <div class="swipe-val" id="sceneLet">A</div>
+                            <button class="step-btn" id="slDown"><svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                        </div>
+                    </div>
+
+                    <div class="cell take-cell">
+                        <span class="cell-label">Take</span>
+                        <div class="swipe-cell-inner">
+                            <button class="step-btn" id="tkUp"><svg viewBox="0 0 12 12" fill="none"><path d="M2 8.5L6 3.5L10 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                            <div class="swipe-val" id="takeVal">1</div>
+                            <button class="step-btn" id="tkDown"><svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bottom-row">
+                    <div class="meta-cell">
+                        <div class="meta-label">Date</div>
+                        <div class="meta-date" id="dateCell"></div>
+                    </div>
+                    <button class="theme-btn" id="themeBtn" title="Toggle theme">
+                        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
-  </div>
 
-  <div class="title-row">
-    <div class="prod-wrap">
-      <div class="prod-dot"></div>
-      <input class="prod-name-input" id="prodInput" type="text" value="Winter Promo 24" spellcheck="false"/>
-    </div>
-    <div class="title-right">
-      <div class="timecode" id="timecode">00:00:00</div>
-      <button class="mark-btn" id="markBtn">MARK</button>
-    </div>
-  </div>
+    <script>
+        // ==========================================
+        // 1. SWIPE NAVIGATION LOGIC
+        // ==========================================
+        let currentView = 'tracker'; 
+        
+        window.goToView = function(view) {
+            currentView = view;
+            const slider = document.getElementById('appSlider');
+            if(view === 'tracker') {
+                slider.style.transform = 'translateX(0)';
+            } else {
+                slider.style.transform = 'translateX(-100vw)';
+                resumeAudio(); 
+            }
+        };
 
-  <div class="main-grid">
-    <div class="cell char-cell">
-      <span class="cell-label">Character</span>
-      <textarea class="char-name-input" id="charInput" spellcheck="false" rows="1">John Doe</textarea>
-    </div>
+        let touchStartX = 0;
+        let touchStartY = 0;
 
-    <div class="cell scene-num-cell">
-      <span class="cell-label">Scene</span>
-      <div class="swipe-cell-inner">
-        <button class="step-btn" id="snUp">
-          <svg viewBox="0 0 12 12" fill="none"><path d="M2 8.5L6 3.5L10 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="swipe-val" id="sceneNum">1</div>
-        <button class="step-btn" id="snDown">
-          <svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </div>
+        document.addEventListener('touchstart', e => {
+            if(e.target.closest('.swipe-cell-inner') || e.target.closest('.filter-section')) return; 
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, {passive: true});
 
-    <div class="cell scene-let-cell">
-      <span class="cell-label" style="opacity:0">·</span>
-      <div class="swipe-cell-inner">
-        <button class="step-btn" id="slUp">
-          <svg viewBox="0 0 12 12" fill="none"><path d="M2 8.5L6 3.5L10 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="swipe-val" id="sceneLet">A</div>
-        <button class="step-btn" id="slDown">
-          <svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </div>
+        document.addEventListener('touchend', e => {
+            if(e.target.closest('.swipe-cell-inner') || e.target.closest('.filter-section')) return;
+            let touchEndX = e.changedTouches[0].screenX;
+            let touchEndY = e.changedTouches[0].screenY;
+            handleGlobalSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
+        }, {passive: true});
 
-    <div class="cell take-cell">
-      <span class="cell-label">Take</span>
-      <div class="swipe-cell-inner">
-        <button class="step-btn" id="tkUp">
-          <svg viewBox="0 0 12 12" fill="none"><path d="M2 8.5L6 3.5L10 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="swipe-val" id="takeVal">1</div>
-        <button class="step-btn" id="tkDown">
-          <svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
+        function handleGlobalSwipe(startX, startY, endX, endY) {
+            const diffX = startX - endX;
+            const diffY = startY - endY;
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0 && currentView === 'tracker') goToView('slate');
+                else if (diffX < 0 && currentView === 'slate') goToView('tracker');
+            }
+        }
 
-  <div class="bottom-row">
-    <div class="meta-cell">
-      <div class="meta-label">Date</div>
-      <div class="meta-date" id="dateCell"></div>
-    </div>
-    <button class="theme-btn" id="themeBtn" title="Toggle theme">
-      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
-    </button>
-  </div>
-</div>
+        // ==========================================
+        // 2. GLOBAL STATE & SEQUENCE LOGIC
+        // ==========================================
+        let excelData = [];
+        let sheetHeaders = [];
+        let outputFileName = "Updated_Shots_List.xlsx";
+        let originalWorkbook = null;
+        let targetSheetName = "";
+        let allExpanded = false; 
+        let filtersVisible = false;
+        
+        let currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
+        let activeShotIndex = -1; 
 
-<script>
-// ---- STATE & LOCAL STORAGE ----
-let sceneNum=1;
-const LETTERS=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
-let letIdx=0; 
-let take=1;
+        // Slate Variables
+        let sceneNum = 1;
+        const LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+        let letIdx = 0; 
+        let take = 1;
 
-const snEl=document.getElementById('sceneNum');
-const slEl=document.getElementById('sceneLet');
-const tkEl=document.getElementById('takeVal');
-const prodInput=document.getElementById('prodInput');
-const charInput=document.getElementById('charInput');
+        const snEl = document.getElementById('sceneNum');
+        const slEl = document.getElementById('sceneLet');
+        const tkEl = document.getElementById('takeVal');
+        const prodInput = document.getElementById('prodInput');
+        const charInput = document.getElementById('charInput');
 
-function saveState() {
-  const state = {
-    sceneNum, letIdx, take,
-    prod: prodInput.value,
-    char: charInput.value,
-    theme: document.documentElement.getAttribute('data-theme')
-  };
-  localStorage.setItem('clapper_state', JSON.stringify(state));
-}
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedData = localStorage.getItem('productionApp_state');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    
+                    excelData = parsed.excelData || [];
+                    sheetHeaders = parsed.sheetHeaders || [];
+                    outputFileName = parsed.outputFileName || "Updated_Shots_List.xlsx";
+                    targetSheetName = parsed.targetSheetName || "Shots List";
+                    if (parsed.filters) currentFilters = parsed.filters;
+                    
+                    if(parsed.slate) {
+                        sceneNum = parsed.slate.sceneNum || 1;
+                        letIdx = parsed.slate.letIdx || 0;
+                        take = parsed.slate.take || 1;
+                        prodInput.value = parsed.slate.prod || "Production Name";
+                        charInput.value = parsed.slate.char || "Cast";
+                    }
+                    
+                    if(parsed.theme) document.documentElement.setAttribute('data-theme', parsed.theme);
+                    
+                    if (excelData.length > 0) {
+                        document.getElementById('emptyState').style.display = 'none';
+                        showTopButtons();
+                        
+                        populateFilters();
+                        document.getElementById('filterScene').value = currentFilters.scene;
+                        document.getElementById('filterLocation').value = currentFilters.location;
+                        document.getElementById('filterCharacter').value = currentFilters.character;
+                        document.getElementById('filterStatus').value = currentFilters.status || 'all';
+                        renderCards();
+                    }
+                } catch (e) { console.error("Failed to load local storage data", e); }
+            }
+            
+            snEl.textContent = sceneNum;
+            slEl.textContent = LETTERS[letIdx];
+            tkEl.textContent = take;
+            updateThemeIcon();
+        });
 
-function loadState() {
-  const saved = localStorage.getItem('clapper_state');
-  if(saved) {
-    try {
-      const state = JSON.parse(saved);
-      if(state.sceneNum !== undefined) sceneNum = state.sceneNum;
-      if(state.letIdx !== undefined) letIdx = state.letIdx;
-      if(state.take !== undefined) take = state.take;
-      if(state.prod !== undefined) prodInput.value = state.prod;
-      if(state.char !== undefined) charInput.value = state.char;
-      if(state.theme) document.documentElement.setAttribute('data-theme', state.theme);
-    } catch(e) {}
-  }
-  snEl.textContent = sceneNum;
-  slEl.textContent = LETTERS[letIdx];
-  tkEl.textContent = take;
-  updateThemeIcon();
-}
+        // Sequence tracking functions
+        function getUsedSequenceNumbers() {
+            let used = new Set();
+            excelData.forEach(row => {
+                let seq = row['Shoot Sequence'] || row['Shooting Sequence'];
+                if (seq && !isNaN(parseInt(seq))) {
+                    used.add(parseInt(seq));
+                }
+            });
+            return used;
+        }
 
-prodInput.addEventListener('input', saveState);
-charInput.addEventListener('input', saveState);
+        function getNextSequenceNumber() {
+            let used = getUsedSequenceNumbers();
+            let next = 1;
+            while (used.has(next)) next++;
+            return next;
+        }
 
+        function shiftSequencesDown(removedSeqStr) {
+            let removedNum = parseInt(removedSeqStr);
+            if (isNaN(removedNum)) return;
+            
+            let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
+            
+            excelData.forEach(row => {
+                let currentSeq = parseInt(row[seqField]);
+                if (!isNaN(currentSeq) && currentSeq > removedNum) {
+                    row[seqField] = currentSeq - 1;
+                }
+            });
+        }
 
-// ---- AUDIO ----
-const actx = new (window.AudioContext || window.webkitAudioContext)();
-function resumeAudio(){ if(actx.state==='suspended') actx.resume(); }
-document.addEventListener('pointerdown', resumeAudio, {once:true});
+        function refreshAllSequenceDropdowns() {
+            let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
+            excelData.forEach((row, index) => {
+                let seqSelect = document.getElementById(`seq-sel-${index}`);
+                if (seqSelect) {
+                    let currentVal = row[seqField] || '';
+                    seqSelect.innerHTML = getSequenceOptions(100, currentVal);
+                }
+            });
+        }
 
-function playClap(){
-  resumeAudio();
-  const now = actx.currentTime;
-  const len = actx.sampleRate * 0.09;
-  const buf = actx.createBuffer(1,len,actx.sampleRate);
-  const d = buf.getChannelData(0);
-  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(len*.13));
-  const ns=actx.createBufferSource(); ns.buffer=buf;
-  const hp=actx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1800;
-  const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=3400; bp.Q.value=.8;
-  const gn=actx.createGain(); gn.gain.setValueAtTime(1.5,now); gn.gain.exponentialRampToValueAtTime(.001,now+.13);
-  ns.connect(hp); hp.connect(bp); bp.connect(gn); gn.connect(actx.destination); ns.start(now);
-  const osc=actx.createOscillator(); osc.type='sine';
-  osc.frequency.setValueAtTime(220,now); osc.frequency.exponentialRampToValueAtTime(55,now+.07);
-  const og=actx.createGain(); og.gain.setValueAtTime(.55,now); og.gain.exponentialRampToValueAtTime(.001,now+.1);
-  osc.connect(og); og.connect(actx.destination); osc.start(now); osc.stop(now+.1);
-}
+        function showTopButtons() {
+            document.getElementById('exportBtn').style.display = 'flex';
+            document.getElementById('toggleAllBtn').style.display = 'flex';
+            document.getElementById('clearBtn').style.display = 'flex';
+            document.getElementById('filterToggleBtn').style.display = 'flex';
+        }
 
-// ---- CLOCK ----
-function tick(){
-  const d=new Date(),p=n=>String(n).padStart(2,'0');
-  document.getElementById('timecode').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-}
-tick(); setInterval(tick,1000);
+        window.toggleFilters = function() {
+            filtersVisible = !filtersVisible;
+            const filterBtn = document.getElementById('filterToggleBtn');
+            const filterSec = document.getElementById('filterSection');
+            
+            if(filtersVisible) {
+                filterSec.style.display = 'flex';
+                filterBtn.classList.add('filter-active');
+            } else {
+                filterSec.style.display = 'none';
+                filterBtn.classList.remove('filter-active');
+            }
+        };
 
-// ---- DATE ----
-const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const nd=new Date();
-document.getElementById('dateCell').textContent=
-  `${String(nd.getDate()).padStart(2,'0')} ${MN[nd.getMonth()]} ${nd.getFullYear()}`;
+        function saveState() {
+            const state = {
+                excelData: excelData,
+                sheetHeaders: sheetHeaders,
+                outputFileName: outputFileName,
+                targetSheetName: targetSheetName,
+                filters: currentFilters,
+                slate: { sceneNum, letIdx, take, prod: prodInput.value, char: charInput.value },
+                theme: document.documentElement.getAttribute('data-theme')
+            };
+            localStorage.setItem('productionApp_state', JSON.stringify(state));
+        }
 
-// ---- ANIMATE ----
-function anim(el, cls){
-  el.classList.remove('going-up','going-down'); void el.offsetWidth;
-  el.classList.add(cls);
-  el.addEventListener('animationend',()=>el.classList.remove('going-up','going-down'),{once:true});
-}
+        prodInput.addEventListener('input', saveState);
+        charInput.addEventListener('input', saveState);
 
-// ---- UPDATERS ----
-function setSceneNum(n, dir, isReset){
-  sceneNum=Math.max(1,Math.min(99,n));
-  snEl.textContent=sceneNum;
-  if(!isReset) anim(snEl, dir==='up' ? 'going-up' : 'going-down');
-  
-  letIdx = 0;
-  slEl.textContent = LETTERS[letIdx];
-  
-  resetTakeQuiet();
-  saveState();
-}
+        window.clearLocalData = function() {
+            if (confirm("Clear all data and reset?")) {
+                localStorage.removeItem('productionApp_state');
+                location.reload();
+            }
+        };
 
-function setSceneLet(i, dir, isReset){
-  letIdx=((i%LETTERS.length)+LETTERS.length)%LETTERS.length;
-  slEl.textContent=LETTERS[letIdx];
-  if(!isReset) anim(slEl, dir==='up' ? 'going-up' : 'going-down');
-  
-  resetTakeQuiet();
-  saveState();
-}
+        // ==========================================
+        // 3. TRACKER & EXCEL LOGIC
+        // ==========================================
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            outputFileName = file.name.replace(/\.[^/.]+$/, "") + "_Updated.xlsx";
 
-function setTake(n, dir, isReset){
-  take=Math.max(1,n); tkEl.textContent=take;
-  if(!isReset) anim(tkEl, dir==='up' ? 'going-up' : 'going-down');
-  saveState();
-}
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const data = new Uint8Array(event.target.result);
+                originalWorkbook = XLSX.read(data, {type: 'array'});
+                
+                targetSheetName = originalWorkbook.SheetNames[0];
+                const shotSheet = originalWorkbook.SheetNames.find(name => name.toLowerCase().includes('shot'));
+                if (shotSheet) targetSheetName = shotSheet;
 
-function resetTakeQuiet(){
-  take=1; tkEl.textContent=1;
-}
+                const worksheet = originalWorkbook.Sheets[targetSheetName];
+                const rawJson = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+                if (rawJson.length > 0) sheetHeaders = Object.keys(rawJson[0]);
+                
+                excelData = rawJson.filter(row => {
+                    const colA_Value = row[sheetHeaders[0]];
+                    if (!colA_Value) return false;
+                    return String(colA_Value).replace(/[- ]/g, '').length > 0;
+                });
 
-// ---- BUTTON HANDLERS ----
-document.getElementById('snUp').addEventListener('click',   ()=>setSceneNum(sceneNum+1,'up',false));
-document.getElementById('snDown').addEventListener('click', ()=>setSceneNum(sceneNum-1,'down',false));
-document.getElementById('slUp').addEventListener('click',   ()=>setSceneLet(letIdx+1,'up',false));
-document.getElementById('slDown').addEventListener('click', ()=>setSceneLet(letIdx-1,'down',false));
-document.getElementById('tkUp').addEventListener('click',   ()=>setTake(take+1,'up',false));
-document.getElementById('tkDown').addEventListener('click', ()=>setTake(take-1,'down',false));
+                currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
+                document.getElementById('filterStatus').value = 'all';
+                document.getElementById('emptyState').style.display = 'none';
+                showTopButtons();
+                
+                saveState();
+                populateFilters();
+                renderCards();
+            };
+            reader.readAsArrayBuffer(file);
+        });
 
-// ---- SWIPE (throttled & orientation-aware + DOUBLE TAP) ----
-function makeSwipeable(el, onUp, onDown, onReset){
-  let startPos=null, moved=false, lastStep=0, lastTap=0;
-  const THRESH=28, COOLDOWN=160, DBL_TAP_DELAY=300;
+        function populateFilters() {
+            const scenes = new Set(), locations = new Set(), characters = new Set();
+            excelData.forEach(row => {
+                const s = String(row['Scene'] || row['Scene No.'] || '').trim();
+                const l = String(row['Location'] || '').trim();
+                const c = String(row['Character'] || '').trim();
+                if(s && s !== '-') scenes.add(s);
+                if(l && l !== '-') locations.add(l);
+                if(c && c !== '-') characters.add(c);
+            });
 
-  function getPos(e) {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const touch = e.touches ? e.touches[0] : e;
-    return isPortrait ? -touch.clientX : touch.clientY;
-  }
+            fillDropdown('filterScene', Array.from(scenes).sort((a,b) => a.localeCompare(b, undefined, {numeric: true})));
+            fillDropdown('filterLocation', Array.from(locations).sort());
+            fillDropdown('filterCharacter', Array.from(characters).sort());
+        }
 
-  function onStart(e){
-    if(e.target.closest('.step-btn')) return;
+        function fillDropdown(id, items) {
+            const select = document.getElementById(id);
+            const currentVal = select.value;
+            select.innerHTML = '<option value="all">All</option>';
+            items.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.toLowerCase(); opt.textContent = item;
+                select.appendChild(opt);
+            });
+            if(Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal;
+        }
 
-    const now = Date.now();
-    if (now - lastTap < DBL_TAP_DELAY) {
-      onReset();
-      lastTap = 0;
-      startPos = null;
-      return;
-    }
-    
-    lastTap = now;
-    startPos=getPos(e); moved=false;
-  }
-  function onMove(e){
-    if(startPos===null) return;
-    const pos=getPos(e);
-    const dy=startPos-pos;
-    
-    if(Math.abs(dy)<THRESH) return;
-    const now=Date.now();
-    if(now-lastStep < COOLDOWN) return;
-    
-    moved=true; lastStep=now;
-    
-    if(dy>0){ onUp(); startPos=pos; }
-    else    { onDown(); startPos=pos; }
-  }
-  function onEnd(){
-    startPos=null; moved=false;
-  }
+        function getNumberOptions(max, currentVal) {
+            let options = '<option value="">None</option>';
+            let found = false;
+            for (let i = 1; i <= max; i++) {
+                const isSelected = (String(currentVal) === String(i)) ? 'selected' : '';
+                if (isSelected) found = true;
+                options += `<option value="${i}" ${isSelected}>${i}</option>`;
+            }
+            if (currentVal && !found && String(currentVal).trim() !== '') {
+                options += `<option value="${currentVal}" selected>${currentVal} (Custom)</option>`;
+            }
+            return options;
+        }
 
-  el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e);},{passive:false});
-  el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e);},{passive:false});
-  el.addEventListener('touchend',  e=>{e.preventDefault();onEnd();},{passive:false});
-  el.addEventListener('mousedown', e=>onStart(e));
-  window.addEventListener('mousemove',e=>{if(startPos!==null)onMove(e);});
-  window.addEventListener('mouseup', ()=>{if(startPos!==null)onEnd();});
-}
+        function getSequenceOptions(max, currentVal) {
+            let used = getUsedSequenceNumbers();
+            let options = '<option value="">None</option>';
+            let found = false;
+            for (let i = 1; i <= max; i++) {
+                const isSelected = (String(currentVal) === String(i)) ? 'selected' : '';
+                const isDisabled = (used.has(i) && !isSelected) ? 'disabled' : '';
+                if (isSelected) found = true;
+                options += `<option value="${i}" ${isSelected} ${isDisabled}>${i}</option>`;
+            }
+            if (currentVal && !found && String(currentVal).trim() !== '') {
+                options += `<option value="${currentVal}" selected>${currentVal} (Custom)</option>`;
+            }
+            return options;
+        }
 
-makeSwipeable(snEl,
-  ()=>setSceneNum(sceneNum+1,'up',false),
-  ()=>setSceneNum(sceneNum-1,'down',false),
-  ()=>setSceneNum(1,'up',true)
-);
-makeSwipeable(slEl,
-  ()=>setSceneLet(letIdx+1,'up',false),
-  ()=>setSceneLet(letIdx-1,'down',false),
-  ()=>setSceneLet(0,'up',true)
-);
-makeSwipeable(tkEl,
-  ()=>setTake(take+1,'up',false),
-  ()=>setTake(take-1,'down',false),
-  ()=>setTake(1,'up',true)
-);
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = ''; 
 
-// ---- CLAP ----
-function doClap(){
-  playClap();
-  const top=document.getElementById('clapperTop'), fl=document.getElementById('flash');
-  top.classList.remove('clapping'); void top.offsetWidth; top.classList.add('clapping');
-  top.addEventListener('animationend',()=>top.classList.remove('clapping'),{once:true});
-  fl.classList.remove('active'); void fl.offsetWidth; fl.classList.add('active');
-  fl.addEventListener('animationend',()=>fl.classList.remove('active'),{once:true});
-  setTake(take+1,'up',false);
-}
-document.getElementById('markBtn').addEventListener('click', doClap);
-document.getElementById('clapperTop').addEventListener('click', doClap);
+            excelData.forEach((row, index) => {
+                const code = row['Code'] || row[sheetHeaders[0]] || 'No Code';
+                const scene = String(row['Scene'] || row['Scene No.'] || '-').trim();
+                const location = String(row['Location'] || '-').trim();
+                const character = String(row['Character'] || '-').trim();
+                
+                const frame = row['Frame'] || '-';
+                const angle = row['Camera Angle'] || row['Cam Angle'] || '-';
+                const shootType = row['Shoot Type'] || row['Type'] || '-';
+                const desc = row['Description'] || row['Action/Description'] || '-';
+                const notes = row['Notes - Shoot/Edit'] || row['Notes'] || '';
+                
+                const currentTake = row['Take'] || '';
+                const status = row['Status'] || '';
+                const shootSequence = row['Shoot Sequence'] || row['Shooting Sequence'] || '';
 
-// ---- THEME ----
-const moonPath = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>`;
-const sunPaths = `
-  <circle cx="12" cy="12" r="4.5" fill="currentColor"/>
-  <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-    <line x1="12" y1="2" x2="12" y2="4.5"/>
-    <line x1="12" y1="19.5" x2="12" y2="22"/>
-    <line x1="2" y1="12" x2="4.5" y2="12"/>
-    <line x1="19.5" y1="12" x2="22" y2="12"/>
-    <line x1="4.9" y1="4.9" x2="6.8" y2="6.8"/>
-    <line x1="17.2" y1="17.2" x2="19.1" y2="19.1"/>
-    <line x1="19.1" y1="4.9" x2="17.2" y2="6.8"/>
-    <line x1="6.8" y1="17.2" x2="4.9" y2="19.1"/>
-  </g>`;
+                let statusClass = '';
+                if (status.toLowerCase() === 'done') statusClass = 'status-done';
+                if (status.toLowerCase() === 'pending') statusClass = 'status-pending';
+                if (status.toLowerCase() === 'skipped') statusClass = 'status-skipped';
 
-function updateThemeIcon(){
-  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
-  const ico = document.getElementById('themeIcon');
-  ico.style.color = 'var(--gold)';
-  ico.innerHTML = isDark ? moonPath : sunPaths;
-}
+                const card = document.createElement('div');
+                card.className = `card collapsed ${statusClass}`;
+                card.id = `card-${index}`;
+                
+                card.setAttribute('data-scene', scene.toLowerCase());
+                card.setAttribute('data-location', location.toLowerCase());
+                card.setAttribute('data-character', character.toLowerCase());
+                card.setAttribute('data-status', status.toLowerCase());
 
-document.getElementById('themeBtn').addEventListener('click',()=>{
-  const html=document.documentElement;
-  html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
-  updateThemeIcon();
-  saveState();
-});
+                card.innerHTML = `
+                    <div class="card-header" onclick="toggleCard(${index})">
+                        <div class="card-header-left">
+                            <span class="code-title">${code}</span>
+                            <span class="scene-badge">Sc: ${scene}</span>
+                        </div>
+                        <span class="toggle-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div><span class="label">Character</span><span class="value">${character}</span></div>
+                            <div><span class="label">Location</span><span class="value">${location}</span></div>
+                            <div><span class="label">Type</span><span class="value">${shootType}</span></div>
+                            <div><span class="label">Frame/Angle</span><span class="value">${frame} / ${angle}</span></div>
+                            
+                            <div class="info-full">
+                                <span class="label">Description</span>
+                                <div class="desc-text">${desc}</div>
+                            </div>
+                            
+                            ${notes ? `<div class="info-full"><span class="label">Notes</span><div class="desc-text" style="color:var(--gold); border-color:var(--gold);">${notes}</div></div>` : ''}
+                        </div>
 
-// LOAD SAVED STATE ON STARTUP
-loadState();
+                        <div class="input-section">
+                            <div class="input-group">
+                                <label>Take</label>
+                                <select id="take-sel-${index}" onchange="updateData(${index}, 'Take', this.value)">
+                                    ${getNumberOptions(20, currentTake)}
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Status</label>
+                                <select id="status-sel-${index}" onchange="updateData(${index}, 'Status', this.value)">
+                                    <option value="" ${!status ? 'selected' : ''}>None</option>
+                                    <option value="Pending" ${status.toLowerCase() === 'pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Done" ${status.toLowerCase() === 'done' ? 'selected' : ''}>Done</option>
+                                    <option value="Skipped" ${status.toLowerCase() === 'skipped' ? 'selected' : ''}>Skipped</option>
+                                </select>
+                            </div>
+                            <div class="input-group full-width">
+                                <label>Shoot Sequence</label>
+                                <select id="seq-sel-${index}" onchange="updateSequence(${index}, this.value)">
+                                    ${getSequenceOptions(100, shootSequence)}
+                                </select>
+                            </div>
+                        </div>
+                        <button class="send-slate-btn" onclick="sendToSlate(${index})">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M4 8h16"/><path d="M3 4l3 4"/><path d="M7 4l3 4"/><path d="M11 4l3 4"/><path d="M15 4l3 4"/></svg>
+                            Send to Slate
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
 
-</script>
+            if (excelData.length > 0) {
+                applyFilters(); 
+            }
+        }
+
+        window.toggleCard = function(index) { document.getElementById(`card-${index}`).classList.toggle('collapsed'); };
+        window.toggleAllCards = function() {
+            allExpanded = !allExpanded;
+            document.querySelectorAll('.card').forEach(card => allExpanded ? card.classList.remove('collapsed') : card.classList.add('collapsed'));
+        };
+
+        window.applyFilters = function() {
+            currentFilters.scene = document.getElementById('filterScene').value;
+            currentFilters.location = document.getElementById('filterLocation').value;
+            currentFilters.character = document.getElementById('filterCharacter').value;
+            currentFilters.status = document.getElementById('filterStatus').value;
+
+            document.querySelectorAll('.card').forEach(card => {
+                const cScene = card.getAttribute('data-scene');
+                const cLoc = card.getAttribute('data-location');
+                const cChar = card.getAttribute('data-character');
+                const cStat = card.getAttribute('data-status');
+
+                const matchScene = (currentFilters.scene === 'all' || cScene === currentFilters.scene);
+                const matchLoc = (currentFilters.location === 'all' || cLoc === currentFilters.location);
+                const matchChar = (currentFilters.character === 'all' || cChar === currentFilters.character);
+                const matchStat = (currentFilters.status === 'all' || cStat === currentFilters.status);
+
+                card.style.display = (matchScene && matchLoc && matchChar && matchStat) ? 'block' : 'none';
+            });
+            saveState(); 
+        };
+
+        window.updateData = function(index, field, value) {
+            let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
+            
+            let actualField = field;
+            if (field === 'Shoot Sequence') actualField = seqField;
+            
+            excelData[index][actualField] = value;
+            if (!sheetHeaders.includes(actualField)) sheetHeaders.push(actualField);
+
+            if (actualField === 'Status') {
+                updateCardColor(index, value);
+                
+                if (value.toLowerCase() === 'done') {
+                    if (!excelData[index][seqField]) {
+                        let nextSeq = getNextSequenceNumber();
+                        excelData[index][seqField] = nextSeq;
+                        if (!sheetHeaders.includes(seqField)) sheetHeaders.push(seqField);
+                        refreshAllSequenceDropdowns();
+                    }
+                } else {
+                    if (excelData[index][seqField]) {
+                        let oldSeq = excelData[index][seqField];
+                        excelData[index][seqField] = ""; 
+                        shiftSequencesDown(oldSeq);
+                        refreshAllSequenceDropdowns(); 
+                    }
+                }
+            }
+            saveState(); 
+        };
+
+        window.updateSequence = function(index, value) {
+            let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
+            let oldSeq = excelData[index][seqField];
+            
+            if (!value && oldSeq) {
+                excelData[index][seqField] = ""; 
+                shiftSequencesDown(oldSeq);
+            } else {
+                excelData[index][seqField] = value;
+            }
+            
+            if (!sheetHeaders.includes(seqField)) sheetHeaders.push(seqField);
+            
+            saveState();
+            refreshAllSequenceDropdowns();
+        };
+
+        window.updateCardColor = function(index, statusValue) {
+            const card = document.getElementById(`card-${index}`);
+            card.setAttribute('data-status', statusValue.toLowerCase());
+            card.classList.remove('status-done', 'status-pending', 'status-skipped');
+            if (statusValue === 'Done') card.classList.add('status-done');
+            if (statusValue === 'Pending') card.classList.add('status-pending');
+            if (statusValue === 'Skipped') card.classList.add('status-skipped');
+        };
+
+        window.exportData = function() {
+            const newWorksheet = XLSX.utils.json_to_sheet(excelData, {header: sheetHeaders});
+            if (originalWorkbook) {
+                originalWorkbook.Sheets[targetSheetName] = newWorksheet;
+                XLSX.writeFile(originalWorkbook, outputFileName);
+            } else {
+                const newWorkbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, targetSheetName || "Updated Shots List");
+                XLSX.writeFile(newWorkbook, outputFileName);
+            }
+        };
+
+        // ==========================================
+        // 4. THE BRIDGE: SEND TO SLATE
+        // ==========================================
+        window.sendToSlate = function(index) {
+            activeShotIndex = index;
+            const shot = excelData[index];
+
+            let sceneStr = String(shot['Scene'] || shot['Scene No.'] || '1').trim();
+            let numMatch = sceneStr.match(/\d+/);
+            let letMatch = sceneStr.match(/[A-Za-z]+/);
+
+            if(numMatch) setSceneNum(parseInt(numMatch[0]), 'up', true);
+            else setSceneNum(1, 'up', true);
+
+            if(letMatch) {
+                let charVal = letMatch[0].toUpperCase()[0];
+                let lIdx = LETTERS.indexOf(charVal);
+                if(lIdx !== -1) setSceneLet(lIdx, 'up', true);
+            } else {
+                setSceneLet(0, 'up', true); 
+            }
+
+            charInput.value = String(shot['Character'] || '-').trim();
+            let takeVal = parseInt(shot['Take']) || 1;
+            setTake(takeVal, 'up', true);
+
+            saveState();
+            goToView('slate'); 
+        };
+
+        // ==========================================
+        // 5. SLATE & CLAPPER LOGIC
+        // ==========================================
+        const actx = new (window.AudioContext || window.webkitAudioContext)();
+        function resumeAudio(){ if(actx.state==='suspended') actx.resume(); }
+        document.addEventListener('pointerdown', resumeAudio, {once:true});
+
+        function playClap(){
+            resumeAudio();
+            const now = actx.currentTime;
+            const len = actx.sampleRate * 0.09;
+            const buf = actx.createBuffer(1,len,actx.sampleRate);
+            const d = buf.getChannelData(0);
+            for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(len*.13));
+            const ns=actx.createBufferSource(); ns.buffer=buf;
+            const hp=actx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1800;
+            const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=3400; bp.Q.value=.8;
+            const gn=actx.createGain(); gn.gain.setValueAtTime(1.5,now); gn.gain.exponentialRampToValueAtTime(.001,now+.13);
+            ns.connect(hp); hp.connect(bp); bp.connect(gn); gn.connect(actx.destination); ns.start(now);
+            const osc=actx.createOscillator(); osc.type='sine';
+            osc.frequency.setValueAtTime(220,now); osc.frequency.exponentialRampToValueAtTime(55,now+.07);
+            const og=actx.createGain(); og.gain.setValueAtTime(.55,now); og.gain.exponentialRampToValueAtTime(.001,now+.1);
+            osc.connect(og); og.connect(actx.destination); osc.start(now); osc.stop(now+.1);
+        }
+
+        function tick(){
+            const d=new Date(),p=n=>String(n).padStart(2,'0');
+            document.getElementById('timecode').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        }
+        tick(); setInterval(tick,1000);
+        const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const nd=new Date();
+        document.getElementById('dateCell').textContent = `${String(nd.getDate()).padStart(2,'0')} ${MN[nd.getMonth()]} ${nd.getFullYear()}`;
+
+        function anim(el, cls){
+            el.classList.remove('going-up','going-down'); void el.offsetWidth; el.classList.add(cls);
+            el.addEventListener('animationend',()=>el.classList.remove('going-up','going-down'),{once:true});
+        }
+
+        function setSceneNum(n, dir, isReset){
+            sceneNum=Math.max(1,Math.min(99,n)); snEl.textContent=sceneNum;
+            if(!isReset) anim(snEl, dir==='up' ? 'going-up' : 'going-down');
+            letIdx = 0; slEl.textContent = LETTERS[letIdx];
+            resetTakeQuiet(); saveState();
+        }
+        function setSceneLet(i, dir, isReset){
+            letIdx=((i%LETTERS.length)+LETTERS.length)%LETTERS.length; slEl.textContent=LETTERS[letIdx];
+            if(!isReset) anim(slEl, dir==='up' ? 'going-up' : 'going-down');
+            resetTakeQuiet(); saveState();
+        }
+        function setTake(n, dir, isReset){
+            take=Math.max(1,n); tkEl.textContent=take;
+            if(!isReset) anim(tkEl, dir==='up' ? 'going-up' : 'going-down');
+            saveState();
+        }
+        function resetTakeQuiet(){ take=1; tkEl.textContent=1; }
+
+        document.getElementById('snUp').addEventListener('click',   ()=>setSceneNum(sceneNum+1,'up',false));
+        document.getElementById('snDown').addEventListener('click', ()=>setSceneNum(sceneNum-1,'down',false));
+        document.getElementById('slUp').addEventListener('click',   ()=>setSceneLet(letIdx+1,'up',false));
+        document.getElementById('slDown').addEventListener('click', ()=>setSceneLet(letIdx-1,'down',false));
+        document.getElementById('tkUp').addEventListener('click',   ()=>setTake(take+1,'up',false));
+        document.getElementById('tkDown').addEventListener('click', ()=>setTake(take-1,'down',false));
+
+        function makeSwipeable(el, onUp, onDown, onReset){
+            let startPos=null, moved=false, lastStep=0, lastTap=0;
+            const THRESH=28, COOLDOWN=160, DBL_TAP_DELAY=300;
+
+            function getPos(e) {
+                const isPortrait = window.innerHeight > window.innerWidth;
+                const touch = e.touches ? e.touches[0] : e;
+                return isPortrait ? -touch.clientX : touch.clientY;
+            }
+
+            function onStart(e){
+                if(e.target.closest('.step-btn')) return;
+                const now = Date.now();
+                if (now - lastTap < DBL_TAP_DELAY) { onReset(); lastTap = 0; startPos = null; return; }
+                lastTap = now; startPos=getPos(e); moved=false;
+            }
+            function onMove(e){
+                if(startPos===null) return;
+                const dy=startPos-getPos(e);
+                if(Math.abs(dy)<THRESH) return;
+                const now=Date.now();
+                if(now-lastStep < COOLDOWN) return;
+                moved=true; lastStep=now;
+                if(dy>0){ onUp(); startPos=getPos(e); } else { onDown(); startPos=getPos(e); }
+            }
+            function onEnd(){ startPos=null; moved=false; }
+
+            el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e);},{passive:false});
+            el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e);},{passive:false});
+            el.addEventListener('touchend',  e=>{e.preventDefault();onEnd();},{passive:false});
+            el.addEventListener('mousedown', e=>onStart(e));
+            window.addEventListener('mousemove',e=>{if(startPos!==null)onMove(e);});
+            window.addEventListener('mouseup', ()=>{if(startPos!==null)onEnd();});
+        }
+        makeSwipeable(snEl, ()=>setSceneNum(sceneNum+1,'up',false), ()=>setSceneNum(sceneNum-1,'down',false), ()=>setSceneNum(1,'up',true));
+        makeSwipeable(slEl, ()=>setSceneLet(letIdx+1,'up',false), ()=>setSceneLet(letIdx-1,'down',false), ()=>setSceneLet(0,'up',true));
+        makeSwipeable(tkEl, ()=>setTake(take+1,'up',false), ()=>setTake(take-1,'down',false), ()=>setTake(1,'up',true));
+
+        function doClap(){
+            playClap();
+            
+            if (activeShotIndex !== -1 && excelData[activeShotIndex]) {
+                const currentTakeToSave = take; 
+                
+                excelData[activeShotIndex]['Take'] = currentTakeToSave;
+                excelData[activeShotIndex]['Status'] = 'Done';
+                
+                let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
+                if (!excelData[activeShotIndex][seqField]) {
+                    let nextSeq = getNextSequenceNumber();
+                    excelData[activeShotIndex][seqField] = nextSeq;
+                    if (!sheetHeaders.includes(seqField)) sheetHeaders.push(seqField);
+                }
+                
+                const tkDrop = document.getElementById(`take-sel-${activeShotIndex}`);
+                const stDrop = document.getElementById(`status-sel-${activeShotIndex}`);
+                if (tkDrop) tkDrop.value = currentTakeToSave;
+                if (stDrop) stDrop.value = 'Done';
+                
+                updateCardColor(activeShotIndex, 'Done');
+                refreshAllSequenceDropdowns();
+            }
+
+            const top=document.getElementById('clapperTop'), fl=document.getElementById('flash');
+            top.classList.remove('clapping'); void top.offsetWidth; top.classList.add('clapping');
+            top.addEventListener('animationend',()=>top.classList.remove('clapping'),{once:true});
+            fl.classList.remove('active'); void fl.offsetWidth; fl.classList.add('active');
+            fl.addEventListener('animationend',()=>fl.classList.remove('active'),{once:true});
+            
+            saveState(); 
+        }
+        document.getElementById('markBtn').addEventListener('click', doClap);
+        document.getElementById('clapperTop').addEventListener('click', doClap);
+
+        const moonPath = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>`;
+        const sunPaths = `<circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22"/><line x1="2" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.8" y2="6.8"/><line x1="17.2" y1="17.2" x2="19.1" y2="19.1"/><line x1="19.1" y1="4.9" x2="17.2" y2="6.8"/><line x1="6.8" y1="17.2" x2="4.9" y2="19.1"/></g>`;
+
+        function updateThemeIcon(){
+            const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+            const ico = document.getElementById('themeIcon');
+            ico.style.color = 'var(--gold)';
+            ico.innerHTML = isDark ? moonPath : sunPaths;
+        }
+
+        document.getElementById('themeBtn').addEventListener('click',()=>{
+            const html=document.documentElement;
+            html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+            updateThemeIcon(); saveState();
+        });
+
+    </script>
 </body>
 </html>

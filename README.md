@@ -20,10 +20,10 @@ Based on the standard template, here is the exact Column and Row layout you shou
 | Column | Header Name | Description | Required? |
 | :--- | :--- | :--- | :--- |
 | **A** | `Code` | The unique ID for the shot (e.g., *Lappu - 1 - B*). | **YES** *(App ignores rows if Col A is blank)* |
-| **B** | `Scene` | The scene number. | Optional |
+| **B** | `Scene` | The scene number. | Yes |
 | **C** | `Location` | Where the scene takes place. | Optional |
-| **D** | `Character` | Who is in the shot. | Optional |
-| **E** | `Shot` | The specific shot letter/number. | Optional |
+| **D** | `Character` | Who is in the shot. | Yes |
+| **E** | `Shot` | The specific shot letter/number. | Yes |
 | **F** | `Frame` | Framing (e.g., Wide, Close Up). | Optional |
 | **G** | `Camera Angle` | Angle (e.g., High, Eye Level). | Optional |
 | **H** | `Shoot Type` | Type of shot (e.g., Action, Dialogue). | Optional |

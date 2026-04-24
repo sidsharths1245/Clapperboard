@@ -197,7 +197,7 @@
         .main-grid { flex:1; display:grid; grid-template-columns: 2fr 1fr 1fr 0.9fr; min-height:0; border-bottom:1px solid var(--border2); }
         .cell{ display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; border-right:1px solid var(--border2); padding:8px 10px; transition:background .35s,border-color .35s; overflow:hidden; }
         .cell:last-child{border-right:none;}
-        .cell-label{ font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:var(--gold); opacity:.85; position:absolute; top:10px; left:50%; transform:translateX(-50%); pointer-events:none; white-space:nowrap; transition:color .35s; }
+        .cell-label{ font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:var(--gold); opacity:.85; position:absolute; top:8px; left:50%; transform:translateX(-50%); pointer-events:none; white-space:nowrap; transition:color .35s; }
 
         /* CHARACTER */
         .char-cell{background:var(--surface);}
@@ -210,7 +210,7 @@
         @media (hover: hover) { .step-btn:hover { color: var(--gold); } }
         .step-btn:active { color: var(--gold2); }
         .step-btn svg{width:12px;height:12px;display:block;pointer-events:none;}
-        .swipe-val{ flex:0 0 auto; font-family:'Bebas Neue',sans-serif; font-size:72px; line-height:1; color:var(--text); user-select:none; touch-action:none; cursor:ns-resize; transition:color .15s; text-align:center; }
+        .swipe-val{ flex:0 0 auto; font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:1; color:var(--text); user-select:none; touch-action:none; cursor:ns-resize; transition:color .15s; text-align:center; }
 
         .going-up  {animation:nudgeUp   .16s ease-out;} .going-down{animation:nudgeDown .16s ease-out;}
         @keyframes nudgeUp  {0%{transform:translateY(8px);opacity:.5}100%{transform:translateY(0);opacity:1}}

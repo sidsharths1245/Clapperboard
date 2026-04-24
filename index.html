@@ -940,15 +940,44 @@
             if (statusValue === 'Skipped') card.classList.add('status-skipped');
         };
 
-        window.exportData = function() {
+        window.exportData = async function() {
             const newWorksheet = XLSX.utils.json_to_sheet(excelData, {header: sheetHeaders});
-            if (originalWorkbook) {
-                originalWorkbook.Sheets[targetSheetName] = newWorksheet;
-                XLSX.writeFile(originalWorkbook, outputFileName);
+            let wb = originalWorkbook;
+            
+            if (wb) {
+                wb.Sheets[targetSheetName] = newWorksheet;
             } else {
-                const newWorkbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, targetSheetName || "Updated Shots List");
-                XLSX.writeFile(newWorkbook, outputFileName);
+                wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, newWorksheet, targetSheetName || "Updated Shots List");
+            }
+
+            try {
+                // 1. Generate the Excel file as a raw ArrayBuffer
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                
+                // 2. Create a Blob with the STRICT Excel MIME type
+                const excelMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                const blob = new Blob([wbout], { type: excelMimeType });
+                
+                // 3. Create a File object
+                const file = new File([blob], outputFileName, { type: excelMimeType });
+
+                // 4. Check if the mobile app/device supports native file sharing
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Updated Shots List',
+                    });
+                } else {
+                    // Fallback: If sharing isn't supported, use the default SheetJS download
+                    XLSX.writeFile(wb, outputFileName);
+                }
+            } catch (error) {
+                console.log("Share interaction failed or was cancelled:", error);
+                // Ultimate fallback just in case the share API throws an unexpected error
+                if (error.name !== 'AbortError') {
+                     XLSX.writeFile(wb, outputFileName);
+                }
             }
         };
 

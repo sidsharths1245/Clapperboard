@@ -951,33 +951,51 @@
                 XLSX.utils.book_append_sheet(wb, newWorksheet, targetSheetName || "Updated Shots List");
             }
 
+            const excelMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+            // --- ATTEMPT 1: Native Mobile Share ---
             try {
-                // 1. Generate the Excel file as a raw ArrayBuffer
-                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                
-                // 2. Create a Blob with the STRICT Excel MIME type
-                const excelMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-                const blob = new Blob([wbout], { type: excelMimeType });
-                
-                // 3. Create a File object
+                const wboutArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wboutArray], { type: excelMimeType });
                 const file = new File([blob], outputFileName, { type: excelMimeType });
 
-                // 4. Check if the mobile app/device supports native file sharing
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
                         title: 'Updated Shots List',
                     });
-                } else {
-                    // Fallback: If sharing isn't supported, use the default SheetJS download
-                    XLSX.writeFile(wb, outputFileName);
+                    return; // Exit if the user successfully shared the file
                 }
-            } catch (error) {
-                console.log("Share interaction failed or was cancelled:", error);
-                // Ultimate fallback just in case the share API throws an unexpected error
-                if (error.name !== 'AbortError') {
-                     XLSX.writeFile(wb, outputFileName);
-                }
+            } catch (shareError) {
+                console.log("Share API unsupported or cancelled:", shareError);
+                // If the user just hit 'cancel' on the share menu, don't force a download
+                if (shareError.name === 'AbortError') return; 
+            }
+
+            // --- ATTEMPT 2: Base64 Data URI (The Wrapper Fix) ---
+            // If sharing isn't supported, we use a Base64 string to bypass the .bin bug.
+            try {
+                // Generate the file as base64 text instead of a blob
+                const wboutBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+                
+                // Hardcode the MIME type directly into the string
+                const base64Uri = "data:" + excelMimeType + ";base64," + wboutBase64;
+                
+                // Create an invisible link and click it
+                const link = document.createElement("a");
+                link.href = base64Uri;
+                link.download = outputFileName;
+                
+                document.body.appendChild(link);
+                link.click();
+                
+                // Clean up
+                setTimeout(() => document.body.removeChild(link), 100);
+                
+            } catch (fallbackError) {
+                console.error("Base64 failed, falling back to standard download.", fallbackError);
+                // Absolute last resort
+                XLSX.writeFile(wb, outputFileName); 
             }
         };
 

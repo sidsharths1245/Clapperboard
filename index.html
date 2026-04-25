@@ -338,7 +338,7 @@
                         <span class="cell-label" style="opacity:0">·</span>
                         <div class="swipe-cell-inner">
                             <button class="step-btn" id="slUp"><svg viewBox="0 0 12 12" fill="none"><path d="M2 8.5L6 3.5L10 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                            <div class="swipe-val" id="sceneLet">A</div>
+                            <div class="swipe-val" id="sceneLet">-</div>
                             <button class="step-btn" id="slDown"><svg viewBox="0 0 12 12" fill="none"><path d="M2 3.5L6 8.5L10 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                         </div>
                     </div>
@@ -461,7 +461,7 @@
 
         // Slate Variables
         let sceneNum = 1;
-        const LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+        const LETTERS = ['-', 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
         let letIdx = 0; 
         let take = 1;
 
@@ -1008,17 +1008,32 @@
 
             let sceneStr = String(shot['Scene'] || shot['Scene No.'] || '1').trim();
             let numMatch = sceneStr.match(/\d+/);
-            let letMatch = sceneStr.match(/[A-Za-z]+/);
+            
+            // Better Regex: Look for a single letter immediately following the scene numbers (ignores spaces or dashes in between)
+            // Works perfectly for "14B", "14 B", or "14-B" while ignoring prefixes like "Scene"
+            let letterRegex = /\d+\s*[-_]?\s*([A-Za-z])/;
+            let letMatch = sceneStr.match(letterRegex);
+
+            let charVal = null;
+            if (letMatch && letMatch[1]) {
+                charVal = letMatch[1].toUpperCase();
+            } else if (!numMatch) {
+                // Fallback: If there are no numbers at all, check if the scene is just a letter (e.g., "A")
+                let onlyLetter = sceneStr.match(/[A-Za-z]/);
+                if (onlyLetter) charVal = onlyLetter[0].toUpperCase();
+            }
 
             if(numMatch) setSceneNum(parseInt(numMatch[0]), 'up', true);
             else setSceneNum(1, 'up', true);
 
-            if(letMatch) {
-                let charVal = letMatch[0].toUpperCase()[0];
+            if(charVal) {
                 let lIdx = LETTERS.indexOf(charVal);
+                // If the letter exists in the array, set it. Otherwise, fallback to index 0 ('-')
                 if(lIdx !== -1) setSceneLet(lIdx, 'up', true);
+                else setSceneLet(0, 'up', true);
             } else {
-                setSceneLet(0, 'up', true); 
+                // If no letter was found in the scene string, set it to 0 ('-')
+                setSceneLet(0, 'up', true);
             }
 
             charInput.value = String(shot['Character'] || '-').trim();

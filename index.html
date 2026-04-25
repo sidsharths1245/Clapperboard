@@ -129,8 +129,8 @@
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9em; }
         .info-full { grid-column: span 2; }
         .label { font-size: 0.8em; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: block; }
-        .value { color: var(--text); font-weight: 500; }
-        .desc-text { color: var(--text); background: var(--bg); padding: 8px; border-radius: 6px; font-size: 0.95em; border: 1px solid var(--border); }
+        .value { color: var(--text); font-weight: 500; min-height: 1.2em; }
+        .desc-text { color: var(--text); background: var(--bg); padding: 8px; border-radius: 6px; font-size: 0.95em; border: 1px solid var(--border); min-height: 2.5em; }
         
         /* SINGLE LINE INPUTS & SLATE BUTTON */
         .card-footer {
@@ -451,6 +451,7 @@
         // ==========================================
         let excelData = [];
         let sheetHeaders = [];
+        let mappedHeaders = {}; // Maps logical fields to real sheet headers
         let outputFileName = "Updated_Shots_List.xlsx";
         let originalWorkbook = null;
         let targetSheetName = "";
@@ -458,6 +459,23 @@
         
         let currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
         let activeShotIndex = -1; 
+
+        // Alias Dictionary for Fuzzy Column Matching
+        const aliasMap = {
+            code: ['code', 'shot code', 'shot id', 'id', 'shot no'],
+            scene: ['scene', 'scene no.', 'scene num', 'scene number', 'sc'],
+            shot: ['shot', 'shot letter', 'shot no.', 'take letter'],
+            location: ['location', 'loc', 'set'],
+            character: ['character', 'cast', 'talent', 'actor'],
+            frame: ['frame', 'shot size', 'size', 'framing'],
+            angle: ['camera angle', 'cam angle', 'angle', 'camera'],
+            type: ['shoot type', 'type', 'shot type', 'category'],
+            description: ['description', 'action/description', 'action', 'desc', 'details'],
+            notes: ['notes - shoot/edit', 'notes', 'remarks', 'edit notes'],
+            take: ['take', 'take no.', 'take num'],
+            status: ['status', 'state'],
+            sequence: ['shoot sequence', 'shooting sequence', 'seq', 'order', 'shoot seq']
+        };
 
         // Slate Variables
         let sceneNum = 1;
@@ -471,6 +489,33 @@
         const prodInput = document.getElementById('prodInput');
         const charInput = document.getElementById('charInput');
 
+        // Maps real headers dynamically
+        function mapHeaders(headers) {
+            let map = {};
+            for (let fieldAlias in aliasMap) {
+                let found = false;
+                for (let header of headers) {
+                    if (aliasMap[fieldAlias].includes(header.toLowerCase().trim())) {
+                        map[fieldAlias] = header;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) map[fieldAlias] = null;
+            }
+            return map;
+        }
+
+        // Guarantees we have a valid key to write to, even if the sheet didn't have it natively
+        function getWriteKey(fieldAlias, defaultName) {
+            if (mappedHeaders[fieldAlias]) return mappedHeaders[fieldAlias];
+            mappedHeaders[fieldAlias] = defaultName;
+            if (!sheetHeaders.includes(defaultName)) {
+                sheetHeaders.push(defaultName);
+            }
+            return defaultName;
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             const savedData = localStorage.getItem('productionApp_state');
             if (savedData) {
@@ -479,9 +524,15 @@
                     
                     excelData = parsed.excelData || [];
                     sheetHeaders = parsed.sheetHeaders || [];
+                    mappedHeaders = parsed.mappedHeaders || {};
                     outputFileName = parsed.outputFileName || "Updated_Shots_List.xlsx";
                     targetSheetName = parsed.targetSheetName || "Shots List";
                     if (parsed.filters) currentFilters = parsed.filters;
+                    
+                    // Recover headers array if older save
+                    if (Object.keys(mappedHeaders).length === 0 && sheetHeaders.length > 0) {
+                        mappedHeaders = mapHeaders(sheetHeaders);
+                    }
                     
                     if(parsed.slate) {
                         sceneNum = parsed.slate.sceneNum || 1;
@@ -516,8 +567,11 @@
         // Sequence tracking functions
         function getUsedSequenceNumbers() {
             let used = new Set();
+            let seqKey = mappedHeaders.sequence;
+            if (!seqKey) return used;
+
             excelData.forEach(row => {
-                let seq = row['Shoot Sequence'] || row['Shooting Sequence'];
+                let seq = row[seqKey];
                 if (seq && !isNaN(parseInt(seq))) {
                     used.add(parseInt(seq));
                 }
@@ -536,22 +590,23 @@
             let removedNum = parseInt(removedSeqStr);
             if (isNaN(removedNum)) return;
             
-            let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
+            let seqKey = mappedHeaders.sequence;
+            if (!seqKey) return;
             
             excelData.forEach(row => {
-                let currentSeq = parseInt(row[seqField]);
+                let currentSeq = parseInt(row[seqKey]);
                 if (!isNaN(currentSeq) && currentSeq > removedNum) {
-                    row[seqField] = currentSeq - 1;
+                    row[seqKey] = currentSeq - 1;
                 }
             });
         }
 
         function refreshAllSequenceDropdowns() {
-            let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
+            let seqKey = mappedHeaders.sequence;
             excelData.forEach((row, index) => {
                 let seqSelect = document.getElementById(`seq-sel-${index}`);
                 if (seqSelect) {
-                    let currentVal = row[seqField] || '';
+                    let currentVal = seqKey ? (row[seqKey] || '') : '';
                     seqSelect.innerHTML = getSequenceOptions(100, currentVal);
                 }
             });
@@ -604,6 +659,7 @@
             const state = {
                 excelData: excelData,
                 sheetHeaders: sheetHeaders,
+                mappedHeaders: mappedHeaders,
                 outputFileName: outputFileName,
                 targetSheetName: targetSheetName,
                 filters: currentFilters,
@@ -616,14 +672,13 @@
         prodInput.addEventListener('input', saveState);
         charInput.addEventListener('input', saveState);
 
-        // SOFT RESET INSTEAD OF RELOAD
         window.clearLocalData = function() {
             if (confirm("Clear all data and reset?")) {
                 localStorage.removeItem('productionApp_state');
                 
-                // 1. Reset JavaScript State Variables
                 excelData = [];
                 sheetHeaders = [];
+                mappedHeaders = {};
                 originalWorkbook = null;
                 targetSheetName = "";
                 currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
@@ -632,7 +687,6 @@
                 letIdx = 0;
                 take = 1;
 
-                // 2. Reset UI Content
                 document.getElementById('cardsContainer').innerHTML = `
                     <div class="empty-state" id="emptyState">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
@@ -640,23 +694,18 @@
                     </div>
                 `;
                 
-                // 3. Hide Top Navigation Buttons
                 document.getElementById('exportBtn').style.display = 'none';
                 document.getElementById('toggleAllBtn').style.display = 'none';
                 document.getElementById('clearBtn').style.display = 'none';
                 document.getElementById('filterToggleBtn').style.display = 'none';
 
-                // 4. Reset Slate Inputs & Values
                 snEl.textContent = sceneNum;
                 slEl.textContent = LETTERS[letIdx];
                 tkEl.textContent = take;
                 prodInput.value = "Production Name";
                 charInput.value = "Cast";
 
-                // 5. Reset File Input (so the exact same file can be re-uploaded)
                 document.getElementById('fileInput').value = '';
-                
-                // 6. Ensure we are looking at the tracker
                 goToView('tracker');
             }
         };
@@ -681,12 +730,16 @@
 
                 const worksheet = originalWorkbook.Sheets[targetSheetName];
                 const rawJson = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
-                if (rawJson.length > 0) sheetHeaders = Object.keys(rawJson[0]);
+                
+                if (rawJson.length > 0) {
+                    sheetHeaders = Object.keys(rawJson[0]);
+                    mappedHeaders = mapHeaders(sheetHeaders);
+                }
                 
                 excelData = rawJson.filter(row => {
-                    const colA_Value = row[sheetHeaders[0]];
-                    if (!colA_Value) return false;
-                    return String(colA_Value).replace(/[- ]/g, '').length > 0;
+                    const firstVal = row[sheetHeaders[0]];
+                    if (firstVal === undefined || firstVal === null) return false;
+                    return String(firstVal).replace(/[- ]/g, '').length > 0;
                 });
 
                 currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
@@ -704,12 +757,13 @@
         function populateFilters() {
             const scenes = new Set(), locations = new Set(), characters = new Set();
             excelData.forEach(row => {
-                const s = String(row['Scene'] || row['Scene No.'] || '').trim();
-                const l = String(row['Location'] || '').trim();
-                const c = String(row['Character'] || '').trim();
-                if(s && s !== '-') scenes.add(s);
-                if(l && l !== '-') locations.add(l);
-                if(c && c !== '-') characters.add(c);
+                const sceneNumPart = mappedHeaders.scene ? String(row[mappedHeaders.scene] || '').trim() : '';
+                const l = mappedHeaders.location ? String(row[mappedHeaders.location] || '').trim() : '';
+                const c = mappedHeaders.character ? String(row[mappedHeaders.character] || '').trim() : '';
+                
+                if(sceneNumPart && sceneNumPart !== '') scenes.add(sceneNumPart);
+                if(l && l !== '') locations.add(l);
+                if(c && c !== '') characters.add(c);
             });
 
             fillDropdown('filterScene', Array.from(scenes).sort((a,b) => a.localeCompare(b, undefined, {numeric: true})));
@@ -764,20 +818,22 @@
             container.innerHTML = ''; 
 
             excelData.forEach((row, index) => {
-                const code = row['Code'] || row[sheetHeaders[0]] || 'No Code';
-                const scene = String(row['Scene'] || row['Scene No.'] || '-').trim();
-                const location = String(row['Location'] || '-').trim();
-                const character = String(row['Character'] || '-').trim();
+                const code = mappedHeaders.code ? (row[mappedHeaders.code] || 'No Code') : 'No Code';
+                const sceneNumPart = mappedHeaders.scene ? String(row[mappedHeaders.scene] || '').trim() : '';
+                const sceneLetPart = mappedHeaders.shot ? String(row[mappedHeaders.shot] || '').trim() : '';
                 
-                const frame = row['Frame'] || '-';
-                const angle = row['Camera Angle'] || row['Cam Angle'] || '-';
-                const shootType = row['Shoot Type'] || row['Type'] || '-';
-                const desc = row['Description'] || row['Action/Description'] || '-';
-                const notes = row['Notes - Shoot/Edit'] || row['Notes'] || '';
+                const location = mappedHeaders.location ? String(row[mappedHeaders.location] || '').trim() : '';
+                const character = mappedHeaders.character ? String(row[mappedHeaders.character] || '').trim() : '';
                 
-                const currentTake = row['Take'] || '';
-                const status = row['Status'] || '';
-                const shootSequence = row['Shoot Sequence'] || row['Shooting Sequence'] || '';
+                const frame = mappedHeaders.frame ? String(row[mappedHeaders.frame] || '') : '';
+                const angle = mappedHeaders.angle ? String(row[mappedHeaders.angle] || '') : '';
+                const shootType = mappedHeaders.type ? String(row[mappedHeaders.type] || '') : '';
+                const desc = mappedHeaders.description ? String(row[mappedHeaders.description] || '') : '';
+                const notes = mappedHeaders.notes ? String(row[mappedHeaders.notes] || '') : '';
+                
+                const currentTake = mappedHeaders.take ? String(row[mappedHeaders.take] || '') : '';
+                const status = mappedHeaders.status ? String(row[mappedHeaders.status] || '') : '';
+                const shootSequence = mappedHeaders.sequence ? String(row[mappedHeaders.sequence] || '') : '';
 
                 let statusClass = '';
                 if (status.toLowerCase() === 'done') statusClass = 'status-done';
@@ -788,16 +844,19 @@
                 card.className = `card collapsed ${statusClass}`;
                 card.id = `card-${index}`;
                 
-                card.setAttribute('data-scene', scene.toLowerCase());
+                card.setAttribute('data-scene-num', sceneNumPart.toLowerCase());
                 card.setAttribute('data-location', location.toLowerCase());
                 card.setAttribute('data-character', character.toLowerCase());
                 card.setAttribute('data-status', status.toLowerCase());
+
+                const sceneBadgeText = sceneLetPart ? `Scene: ${sceneNumPart} | Shot: ${sceneLetPart}` : (sceneNumPart ? `Scene: ${sceneNumPart}` : 'No Scene');
+                const frameAngleDisplay = (frame || angle) ? `${frame} ${frame && angle ? '/' : ''} ${angle}` : '';
 
                 card.innerHTML = `
                     <div class="card-header" onclick="toggleCard(${index})">
                         <div class="card-header-left">
                             <span class="code-title">${code}</span>
-                            <span class="scene-badge">Scene: ${scene}</span>
+                            <span class="scene-badge">${sceneBadgeText}</span>
                         </div>
                         <span class="toggle-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
                     </div>
@@ -807,7 +866,7 @@
                             <div><span class="label">Character</span><span class="value">${character}</span></div>
                             <div><span class="label">Location</span><span class="value">${location}</span></div>
                             <div><span class="label">Type</span><span class="value">${shootType}</span></div>
-                            <div><span class="label">Frame/Angle</span><span class="value">${frame} / ${angle}</span></div>
+                            <div><span class="label">Frame/Angle</span><span class="value">${frameAngleDisplay}</span></div>
                             
                             <div class="info-full">
                                 <span class="label">Description</span>
@@ -821,13 +880,13 @@
                             <div class="input-section">
                                 <div class="input-group">
                                     <label>Take</label>
-                                    <select id="take-sel-${index}" onchange="updateData(${index}, 'Take', this.value)">
+                                    <select id="take-sel-${index}" onchange="updateData(${index}, 'take', this.value)">
                                         ${getNumberOptions(20, currentTake)}
                                     </select>
                                 </div>
                                 <div class="input-group">
                                     <label>Status</label>
-                                    <select id="status-sel-${index}" onchange="updateData(${index}, 'Status', this.value)">
+                                    <select id="status-sel-${index}" onchange="updateData(${index}, 'status', this.value)">
                                         <option value="" ${!status ? 'selected' : ''}>None</option>
                                         <option value="Pending" ${status.toLowerCase() === 'pending' ? 'selected' : ''}>Pending</option>
                                         <option value="Done" ${status.toLowerCase() === 'done' ? 'selected' : ''}>Done</option>
@@ -850,9 +909,7 @@
                 container.appendChild(card);
             });
 
-            if (excelData.length > 0) {
-                applyFilters(); 
-            }
+            if (excelData.length > 0) applyFilters(); 
         }
 
         window.toggleCard = function(index) { document.getElementById(`card-${index}`).classList.toggle('collapsed'); };
@@ -868,12 +925,12 @@
             currentFilters.status = document.getElementById('filterStatus').value;
 
             document.querySelectorAll('.card').forEach(card => {
-                const cScene = card.getAttribute('data-scene');
+                const cSceneNum = card.getAttribute('data-scene-num');
                 const cLoc = card.getAttribute('data-location');
                 const cChar = card.getAttribute('data-character');
                 const cStat = card.getAttribute('data-status');
 
-                const matchScene = (currentFilters.scene === 'all' || cScene === currentFilters.scene);
+                const matchScene = (currentFilters.scene === 'all' || cSceneNum === currentFilters.scene);
                 const matchLoc = (currentFilters.location === 'all' || cLoc === currentFilters.location);
                 const matchChar = (currentFilters.character === 'all' || cChar === currentFilters.character);
                 const matchStat = (currentFilters.status === 'all' || cStat === currentFilters.status);
@@ -883,29 +940,30 @@
             saveState(); 
         };
 
-        window.updateData = function(index, field, value) {
-            let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
+        window.updateData = function(index, alias, value) {
+            let defaultNames = {
+                take: 'Take',
+                status: 'Status',
+                sequence: 'Shoot Sequence'
+            };
             
-            let actualField = field;
-            if (field === 'Shoot Sequence') actualField = seqField;
-            
-            excelData[index][actualField] = value;
-            if (!sheetHeaders.includes(actualField)) sheetHeaders.push(actualField);
+            let writeKey = getWriteKey(alias, defaultNames[alias] || alias);
+            excelData[index][writeKey] = value;
 
-            if (actualField === 'Status') {
+            if (alias === 'status') {
                 updateCardColor(index, value);
+                let seqWriteKey = getWriteKey('sequence', 'Shoot Sequence');
                 
                 if (value.toLowerCase() === 'done') {
-                    if (!excelData[index][seqField]) {
+                    if (!excelData[index][seqWriteKey]) {
                         let nextSeq = getNextSequenceNumber();
-                        excelData[index][seqField] = nextSeq;
-                        if (!sheetHeaders.includes(seqField)) sheetHeaders.push(seqField);
+                        excelData[index][seqWriteKey] = nextSeq;
                         refreshAllSequenceDropdowns();
                     }
                 } else {
-                    if (excelData[index][seqField]) {
-                        let oldSeq = excelData[index][seqField];
-                        excelData[index][seqField] = ""; 
+                    if (excelData[index][seqWriteKey]) {
+                        let oldSeq = excelData[index][seqWriteKey];
+                        excelData[index][seqWriteKey] = ""; 
                         shiftSequencesDown(oldSeq);
                         refreshAllSequenceDropdowns(); 
                     }
@@ -915,17 +973,15 @@
         };
 
         window.updateSequence = function(index, value) {
-            let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
-            let oldSeq = excelData[index][seqField];
+            let seqWriteKey = getWriteKey('sequence', 'Shoot Sequence');
+            let oldSeq = excelData[index][seqWriteKey];
             
             if (!value && oldSeq) {
-                excelData[index][seqField] = ""; 
+                excelData[index][seqWriteKey] = ""; 
                 shiftSequencesDown(oldSeq);
             } else {
-                excelData[index][seqField] = value;
+                excelData[index][seqWriteKey] = value;
             }
-            
-            if (!sheetHeaders.includes(seqField)) sheetHeaders.push(seqField);
             
             saveState();
             refreshAllSequenceDropdowns();
@@ -941,6 +997,7 @@
         };
 
         window.exportData = async function() {
+            // Using mapped keys strictly exports whatever is currently loaded in the memory state
             const newWorksheet = XLSX.utils.json_to_sheet(excelData, {header: sheetHeaders});
             let wb = originalWorkbook;
             
@@ -953,7 +1010,6 @@
 
             const excelMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-            // --- ATTEMPT 1: Native Mobile Share ---
             try {
                 const wboutArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
                 const blob = new Blob([wboutArray], { type: excelMimeType });
@@ -964,37 +1020,25 @@
                         files: [file],
                         title: 'Updated Shots List',
                     });
-                    return; // Exit if the user successfully shared the file
+                    return; 
                 }
             } catch (shareError) {
                 console.log("Share API unsupported or cancelled:", shareError);
-                // If the user just hit 'cancel' on the share menu, don't force a download
                 if (shareError.name === 'AbortError') return; 
             }
 
-            // --- ATTEMPT 2: Base64 Data URI (The Wrapper Fix) ---
-            // If sharing isn't supported, we use a Base64 string to bypass the .bin bug.
             try {
-                // Generate the file as base64 text instead of a blob
                 const wboutBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-                
-                // Hardcode the MIME type directly into the string
                 const base64Uri = "data:" + excelMimeType + ";base64," + wboutBase64;
-                
-                // Create an invisible link and click it
                 const link = document.createElement("a");
                 link.href = base64Uri;
                 link.download = outputFileName;
                 
                 document.body.appendChild(link);
                 link.click();
-                
-                // Clean up
                 setTimeout(() => document.body.removeChild(link), 100);
-                
             } catch (fallbackError) {
                 console.error("Base64 failed, falling back to standard download.", fallbackError);
-                // Absolute last resort
                 XLSX.writeFile(wb, outputFileName); 
             }
         };
@@ -1006,38 +1050,29 @@
             activeShotIndex = index;
             const shot = excelData[index];
 
-            let sceneStr = String(shot['Scene'] || shot['Scene No.'] || '1').trim();
-            let numMatch = sceneStr.match(/\d+/);
-            
-            // Better Regex: Look for a single letter immediately following the scene numbers (ignores spaces or dashes in between)
-            // Works perfectly for "14B", "14 B", or "14-B" while ignoring prefixes like "Scene"
-            let letterRegex = /\d+\s*[-_]?\s*([A-Za-z])/;
-            let letMatch = sceneStr.match(letterRegex);
+            let rawNum = mappedHeaders.scene ? String(shot[mappedHeaders.scene] || '1').trim() : '1';
+            let rawLet = mappedHeaders.shot ? String(shot[mappedHeaders.shot] || '').trim() : '';
+
+            let numMatch = rawNum.match(/\d+/);
+            let letMatch = rawLet.match(/[A-Za-z]/);
 
             let charVal = null;
-            if (letMatch && letMatch[1]) {
-                charVal = letMatch[1].toUpperCase();
-            } else if (!numMatch) {
-                // Fallback: If there are no numbers at all, check if the scene is just a letter (e.g., "A")
-                let onlyLetter = sceneStr.match(/[A-Za-z]/);
-                if (onlyLetter) charVal = onlyLetter[0].toUpperCase();
+            if (letMatch) {
+                charVal = letMatch[0].toUpperCase();
             }
 
-            if(numMatch) setSceneNum(parseInt(numMatch[0]), 'up', true);
+            if (numMatch) setSceneNum(parseInt(numMatch[0]), 'up', true);
             else setSceneNum(1, 'up', true);
 
-            if(charVal) {
+            if (charVal && LETTERS.includes(charVal)) {
                 let lIdx = LETTERS.indexOf(charVal);
-                // If the letter exists in the array, set it. Otherwise, fallback to index 0 ('-')
-                if(lIdx !== -1) setSceneLet(lIdx, 'up', true);
-                else setSceneLet(0, 'up', true);
+                setSceneLet(lIdx, 'up', true);
             } else {
-                // If no letter was found in the scene string, set it to 0 ('-')
                 setSceneLet(0, 'up', true);
             }
 
-            charInput.value = String(shot['Character'] || '-').trim();
-            let takeVal = parseInt(shot['Take']) || 1;
+            charInput.value = mappedHeaders.character ? String(shot[mappedHeaders.character] || '').trim() : '';
+            let takeVal = mappedHeaders.take ? (parseInt(shot[mappedHeaders.take]) || 1) : 1;
             setTake(takeVal, 'up', true);
 
             saveState();
@@ -1152,14 +1187,16 @@
             if (activeShotIndex !== -1 && excelData[activeShotIndex]) {
                 const currentTakeToSave = take; 
                 
-                excelData[activeShotIndex]['Take'] = currentTakeToSave;
-                excelData[activeShotIndex]['Status'] = 'Done';
+                let tkWriteKey = getWriteKey('take', 'Take');
+                let stWriteKey = getWriteKey('status', 'Status');
+                let sqWriteKey = getWriteKey('sequence', 'Shoot Sequence');
                 
-                let seqField = (sheetHeaders.includes('Shooting Sequence') && !sheetHeaders.includes('Shoot Sequence')) ? 'Shooting Sequence' : 'Shoot Sequence';
-                if (!excelData[activeShotIndex][seqField]) {
+                excelData[activeShotIndex][tkWriteKey] = currentTakeToSave;
+                excelData[activeShotIndex][stWriteKey] = 'Done';
+                
+                if (!excelData[activeShotIndex][sqWriteKey]) {
                     let nextSeq = getNextSequenceNumber();
-                    excelData[activeShotIndex][seqField] = nextSeq;
-                    if (!sheetHeaders.includes(seqField)) sheetHeaders.push(seqField);
+                    excelData[activeShotIndex][sqWriteKey] = nextSeq;
                 }
                 
                 const tkDrop = document.getElementById(`take-sel-${activeShotIndex}`);

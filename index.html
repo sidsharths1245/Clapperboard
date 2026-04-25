@@ -33,20 +33,20 @@
             overflow: hidden; 
         }
 
+        /* ----- SHARED / UTILITY ----- */
+        .custom-select {
+            -webkit-appearance: none;
+            background-color: var(--bg); color: var(--text);
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239896A0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+        }
+
         /* ----- APP SLIDER (Swipe Navigation) ----- */
         .app-slider {
-            display: flex;
-            width: 200vw;
-            height: 100vh;
+            display: flex; width: 200vw; height: 100vh;
             transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        
-        .app-view {
-            width: 100vw;
-            height: 100vh;
-            flex-shrink: 0;
-            position: relative;
-        }
+        .app-view { width: 100vw; height: 100vh; flex-shrink: 0; position: relative; }
 
         /* ----- TRACKER VIEW CSS ----- */
         #trackerView { overflow-y: auto; overflow-x: hidden; padding: 10px; padding-bottom: 30px; }
@@ -62,11 +62,14 @@
         
         /* HEADER ACTIONS & MENU */
         .header-actions { position: relative; display: flex; align-items: center; gap: 4px; }
-        .hamburger-btn, .header-icon-btn { background: transparent; color: var(--text); border: none; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: background 0.2s, color 0.2s; }
-        .hamburger-btn:active, .header-icon-btn:active { background: var(--surface2); }
+        .hamburger-btn, .header-icon-btn, .modal-close { 
+            background: transparent; color: var(--text); border: none; cursor: pointer; 
+            padding: 6px; display: flex; align-items: center; justify-content: center; 
+            border-radius: 6px; transition: background 0.2s, color 0.2s; 
+        }
+        .hamburger-btn:active, .header-icon-btn:active, .modal-close:active { background: var(--surface2); }
         .hamburger-btn svg { width: 24px; height: 24px; }
         .header-icon-btn svg { width: 20px; height: 20px; }
-        .header-icon-btn.active { color: var(--gold); }
         
         .dropdown-menu {
             position: absolute; top: 100%; right: 0; background: var(--surface);
@@ -99,17 +102,12 @@
         .modal-overlay.show .modal-content { transform: translateY(0); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .modal-title { font-weight: 700; font-size: 1.2em; color: var(--text); display: flex; align-items: center; gap: 8px; }
-        .modal-close { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; }
+        .modal-close { background: var(--surface2); border: 1px solid var(--border); }
         
         .filter-section { display: flex; flex-direction: column; gap: 12px; }
         .filter-group { display: flex; flex-direction: column; width: 100%; }
         .filter-group label { font-size: 0.8em; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
-        .filter-group select {
-            padding: 10px; border: 1px solid var(--border2); border-radius: 6px; font-size: 0.95em;
-            background-color: var(--bg); color: var(--text); -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239896A0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto;
-        }
+        .filter-group select { padding: 10px; border: 1px solid var(--border2); border-radius: 6px; font-size: 0.95em; background-position: right .7em top 50%; background-size: .65em auto;}
         select option[disabled] { color: var(--text3); font-style: italic; background: var(--surface2); }
 
         /* CARDS */
@@ -133,20 +131,11 @@
         .desc-text { color: var(--text); background: var(--bg); padding: 8px; border-radius: 6px; font-size: 0.95em; border: 1px solid var(--border); min-height: 2.5em; }
         
         /* SINGLE LINE INPUTS & SLATE BUTTON */
-        .card-footer {
-            background: var(--surface2); padding: 12px; border-radius: 8px;
-            display: flex; align-items: flex-end; gap: 12px; margin-top: 15px;
-        }
-        .input-section {
-            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; flex: 1;
-        }
+        .card-footer { background: var(--surface2); padding: 12px; border-radius: 8px; display: flex; align-items: flex-end; gap: 12px; margin-top: 15px; }
+        .input-section { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; flex: 1; }
         .input-group { display: flex; flex-direction: column; }
         .input-group label { font-size: 0.8em; font-weight: 600; margin-bottom: 5px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .input-group select {
-            padding: 8px 6px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9em; background: var(--bg); color: var(--text); -webkit-appearance: none; 
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239896A0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat; background-position: right .4em top 50%; background-size: .55em auto;
-        }
+        .input-group select { padding: 8px 6px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9em; background-position: right .4em top 50%; background-size: .55em auto;}
 
         .send-slate-btn {
             width: 44px; height: 44px; border-radius: 50%; background: var(--gold); color: var(--mark-fg); 
@@ -381,7 +370,7 @@
             <div class="filter-section" id="filterSection">
                 <div class="filter-group">
                     <label>Status</label>
-                    <select id="filterStatus" onchange="applyFilters()">
+                    <select id="filterStatus" class="custom-select" onchange="applyFilters()">
                         <option value="all">All</option>
                         <option value="pending">Pending</option>
                         <option value="done">Done</option>
@@ -390,15 +379,15 @@
                 </div>
                 <div class="filter-group">
                     <label>Scene</label>
-                    <select id="filterScene" onchange="applyFilters()"><option value="all">All</option></select>
+                    <select id="filterScene" class="custom-select" onchange="applyFilters()"><option value="all">All</option></select>
                 </div>
                 <div class="filter-group">
                     <label>Location</label>
-                    <select id="filterLocation" onchange="applyFilters()"><option value="all">All</option></select>
+                    <select id="filterLocation" class="custom-select" onchange="applyFilters()"><option value="all">All</option></select>
                 </div>
                 <div class="filter-group">
                     <label>Character</label>
-                    <select id="filterCharacter" onchange="applyFilters()"><option value="all">All</option></select>
+                    <select id="filterCharacter" class="custom-select" onchange="applyFilters()"><option value="all">All</option></select>
                 </div>
             </div>
         </div>
@@ -413,16 +402,11 @@
         window.goToView = function(view) {
             currentView = view;
             const slider = document.getElementById('appSlider');
-            if(view === 'tracker') {
-                slider.style.transform = 'translateX(0)';
-            } else {
-                slider.style.transform = 'translateX(-100vw)';
-                resumeAudio(); 
-            }
+            slider.style.transform = view === 'tracker' ? 'translateX(0)' : 'translateX(-100vw)';
+            if(view !== 'tracker') resumeAudio(); 
         };
 
-        let touchStartX = 0;
-        let touchStartY = 0;
+        let touchStartX = 0, touchStartY = 0;
 
         document.addEventListener('touchstart', e => {
             if(e.target.closest('.swipe-cell-inner') || e.target.closest('.filter-section') || e.target.closest('.modal-content')) return; 
@@ -432,33 +416,22 @@
 
         document.addEventListener('touchend', e => {
             if(e.target.closest('.swipe-cell-inner') || e.target.closest('.filter-section') || e.target.closest('.modal-content')) return;
-            let touchEndX = e.changedTouches[0].screenX;
-            let touchEndY = e.changedTouches[0].screenY;
-            handleGlobalSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
-        }, {passive: true});
-
-        function handleGlobalSwipe(startX, startY, endX, endY) {
-            const diffX = startX - endX;
-            const diffY = startY - endY;
+            const diffX = touchStartX - e.changedTouches[0].screenX;
+            const diffY = touchStartY - e.changedTouches[0].screenY;
             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
                 if (diffX > 0 && currentView === 'tracker') goToView('slate');
                 else if (diffX < 0 && currentView === 'slate') goToView('tracker');
             }
-        }
+        }, {passive: true});
 
         // ==========================================
         // 2. GLOBAL STATE & SEQUENCE LOGIC
         // ==========================================
-        let excelData = [];
-        let sheetHeaders = [];
-        let mappedHeaders = {}; // Maps logical fields to real sheet headers
-        let outputFileName = "Updated_Shots_List.xlsx";
-        let originalWorkbook = null;
-        let targetSheetName = "";
-        let allExpanded = false; 
+        let excelData = [], sheetHeaders = [], mappedHeaders = {}; 
+        let outputFileName = "Updated_Shots_List.xlsx", targetSheetName = "";
+        let originalWorkbook = null, allExpanded = false, activeShotIndex = -1; 
         
         let currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
-        let activeShotIndex = -1; 
 
         // Alias Dictionary for Fuzzy Column Matching
         const aliasMap = {
@@ -478,41 +451,27 @@
         };
 
         // Slate Variables
-        let sceneNum = 1;
-        const LETTERS = ['-', 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
-        let letIdx = 0; 
-        let take = 1;
+        let sceneNum = 1, letIdx = 0, take = 1;
+        const LETTERS = ['-', ...Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i))];
 
-        const snEl = document.getElementById('sceneNum');
-        const slEl = document.getElementById('sceneLet');
-        const tkEl = document.getElementById('takeVal');
-        const prodInput = document.getElementById('prodInput');
+        const snEl = document.getElementById('sceneNum'), slEl = document.getElementById('sceneLet');
+        const tkEl = document.getElementById('takeVal'), prodInput = document.getElementById('prodInput');
         const charInput = document.getElementById('charInput');
 
         // Maps real headers dynamically
         function mapHeaders(headers) {
             let map = {};
-            for (let fieldAlias in aliasMap) {
-                let found = false;
-                for (let header of headers) {
-                    if (aliasMap[fieldAlias].includes(header.toLowerCase().trim())) {
-                        map[fieldAlias] = header;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) map[fieldAlias] = null;
+            for (let field in aliasMap) {
+                map[field] = headers.find(h => aliasMap[field].includes(h.toLowerCase().trim())) || null;
             }
             return map;
         }
 
-        // Guarantees we have a valid key to write to, even if the sheet didn't have it natively
+        // Guarantees we have a valid key to write to
         function getWriteKey(fieldAlias, defaultName) {
             if (mappedHeaders[fieldAlias]) return mappedHeaders[fieldAlias];
             mappedHeaders[fieldAlias] = defaultName;
-            if (!sheetHeaders.includes(defaultName)) {
-                sheetHeaders.push(defaultName);
-            }
+            if (!sheetHeaders.includes(defaultName)) sheetHeaders.push(defaultName);
             return defaultName;
         }
 
@@ -521,235 +480,139 @@
             if (savedData) {
                 try {
                     const parsed = JSON.parse(savedData);
-                    
                     excelData = parsed.excelData || [];
                     sheetHeaders = parsed.sheetHeaders || [];
-                    mappedHeaders = parsed.mappedHeaders || {};
+                    mappedHeaders = parsed.mappedHeaders || (sheetHeaders.length ? mapHeaders(sheetHeaders) : {});
                     outputFileName = parsed.outputFileName || "Updated_Shots_List.xlsx";
                     targetSheetName = parsed.targetSheetName || "Shots List";
-                    if (parsed.filters) currentFilters = parsed.filters;
-                    
-                    // Recover headers array if older save
-                    if (Object.keys(mappedHeaders).length === 0 && sheetHeaders.length > 0) {
-                        mappedHeaders = mapHeaders(sheetHeaders);
-                    }
+                    currentFilters = parsed.filters || currentFilters;
                     
                     if(parsed.slate) {
-                        sceneNum = parsed.slate.sceneNum || 1;
-                        letIdx = parsed.slate.letIdx || 0;
-                        take = parsed.slate.take || 1;
+                        ({ sceneNum = 1, letIdx = 0, take = 1 } = parsed.slate);
                         prodInput.value = parsed.slate.prod || "Production Name";
                         charInput.value = parsed.slate.char || "Cast";
                     }
-                    
                     if(parsed.theme) document.documentElement.setAttribute('data-theme', parsed.theme);
                     
                     if (excelData.length > 0) {
                         document.getElementById('emptyState').style.display = 'none';
                         showTopButtons();
-                        
                         populateFilters();
-                        document.getElementById('filterScene').value = currentFilters.scene;
-                        document.getElementById('filterLocation').value = currentFilters.location;
-                        document.getElementById('filterCharacter').value = currentFilters.character;
-                        document.getElementById('filterStatus').value = currentFilters.status || 'all';
+                        Object.entries(currentFilters).forEach(([k, v]) => {
+                            const el = document.getElementById(`filter${k.charAt(0).toUpperCase() + k.slice(1)}`);
+                            if(el) el.value = v;
+                        });
                         renderCards();
                     }
                 } catch (e) { console.error("Failed to load local storage data", e); }
             }
-            
-            snEl.textContent = sceneNum;
-            slEl.textContent = LETTERS[letIdx];
-            tkEl.textContent = take;
+            snEl.textContent = sceneNum; slEl.textContent = LETTERS[letIdx]; tkEl.textContent = take;
             updateThemeIcon();
         });
 
-        // Sequence tracking functions
         function getUsedSequenceNumbers() {
-            let used = new Set();
-            let seqKey = mappedHeaders.sequence;
-            if (!seqKey) return used;
-
-            excelData.forEach(row => {
-                let seq = row[seqKey];
-                if (seq && !isNaN(parseInt(seq))) {
-                    used.add(parseInt(seq));
-                }
-            });
+            let used = new Set(), seqKey = mappedHeaders.sequence;
+            if (seqKey) excelData.forEach(r => r[seqKey] && !isNaN(parseInt(r[seqKey])) && used.add(parseInt(r[seqKey])));
             return used;
         }
 
         function getNextSequenceNumber() {
-            let used = getUsedSequenceNumbers();
-            let next = 1;
+            let used = getUsedSequenceNumbers(), next = 1;
             while (used.has(next)) next++;
             return next;
         }
 
         function shiftSequencesDown(removedSeqStr) {
-            let removedNum = parseInt(removedSeqStr);
-            if (isNaN(removedNum)) return;
-            
-            let seqKey = mappedHeaders.sequence;
-            if (!seqKey) return;
-            
+            let removedNum = parseInt(removedSeqStr), seqKey = mappedHeaders.sequence;
+            if (isNaN(removedNum) || !seqKey) return;
             excelData.forEach(row => {
                 let currentSeq = parseInt(row[seqKey]);
-                if (!isNaN(currentSeq) && currentSeq > removedNum) {
-                    row[seqKey] = currentSeq - 1;
-                }
+                if (!isNaN(currentSeq) && currentSeq > removedNum) row[seqKey] = currentSeq - 1;
             });
         }
 
         function refreshAllSequenceDropdowns() {
-            let seqKey = mappedHeaders.sequence;
-            excelData.forEach((row, index) => {
-                let seqSelect = document.getElementById(`seq-sel-${index}`);
-                if (seqSelect) {
-                    let currentVal = seqKey ? (row[seqKey] || '') : '';
-                    seqSelect.innerHTML = getSequenceOptions(100, currentVal);
-                }
+            let seqKey = mappedHeaders.sequence, used = getUsedSequenceNumbers();
+            excelData.forEach((row, i) => {
+                let seqSelect = document.getElementById(`seq-sel-${i}`);
+                if (seqSelect) seqSelect.innerHTML = getOptions(100, seqKey ? row[seqKey] || '' : '', used);
             });
         }
 
         // ==========================================
         // UI & MENU LOGIC
         // ==========================================
-        function showTopButtons() {
-            document.getElementById('exportBtn').style.display = 'flex';
-            document.getElementById('toggleAllBtn').style.display = 'flex';
-            document.getElementById('clearBtn').style.display = 'flex';
-            document.getElementById('filterToggleBtn').style.display = 'flex';
-        }
+        function showTopButtons() { ['exportBtn', 'toggleAllBtn', 'clearBtn', 'filterToggleBtn'].forEach(id => document.getElementById(id).style.display = 'flex'); }
 
-        window.toggleMenu = function() {
-            document.getElementById('dropdownMenu').classList.toggle('show');
-        };
+        window.toggleMenu = () => document.getElementById('dropdownMenu').classList.toggle('show');
+        window.closeMenu = () => document.getElementById('dropdownMenu').classList.remove('show');
+        document.addEventListener('click', e => { if(!e.target.closest('.header-actions')) closeMenu(); });
 
-        window.closeMenu = function() {
-            document.getElementById('dropdownMenu').classList.remove('show');
-        };
-
-        document.addEventListener('click', (e) => {
-            if(!e.target.closest('.header-actions')) {
-                closeMenu();
-            }
-        });
-
-        window.toggleFilters = function() {
+        window.toggleFilters = () => {
             const modal = document.getElementById('filterModal');
             if(modal.classList.contains('show')) {
                 modal.classList.remove('show');
                 setTimeout(() => modal.style.display = 'none', 300);
             } else {
                 modal.style.display = 'flex';
-                // Trigger reflow
-                void modal.offsetWidth;
+                void modal.offsetWidth; // force reflow
                 modal.classList.add('show');
             }
         };
-
-        window.closeModalOnBgClick = function(e) {
-            if (e.target === document.getElementById('filterModal')) {
-                toggleFilters();
-            }
-        };
+        window.closeModalOnBgClick = e => { if (e.target === document.getElementById('filterModal')) toggleFilters(); };
 
         function saveState() {
-            const state = {
-                excelData: excelData,
-                sheetHeaders: sheetHeaders,
-                mappedHeaders: mappedHeaders,
-                outputFileName: outputFileName,
-                targetSheetName: targetSheetName,
-                filters: currentFilters,
+            localStorage.setItem('productionApp_state', JSON.stringify({
+                excelData, sheetHeaders, mappedHeaders, outputFileName, targetSheetName, filters: currentFilters,
                 slate: { sceneNum, letIdx, take, prod: prodInput.value, char: charInput.value },
                 theme: document.documentElement.getAttribute('data-theme')
-            };
-            localStorage.setItem('productionApp_state', JSON.stringify(state));
+            }));
         }
+        [prodInput, charInput].forEach(el => el.addEventListener('input', saveState));
 
-        prodInput.addEventListener('input', saveState);
-        charInput.addEventListener('input', saveState);
-
-        window.clearLocalData = function() {
-            if (confirm("Clear all data and reset?")) {
-                localStorage.removeItem('productionApp_state');
-                
-                excelData = [];
-                sheetHeaders = [];
-                mappedHeaders = {};
-                originalWorkbook = null;
-                targetSheetName = "";
-                currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
-                activeShotIndex = -1;
-                sceneNum = 1;
-                letIdx = 0;
-                take = 1;
-
-                document.getElementById('cardsContainer').innerHTML = `
-                    <div class="empty-state" id="emptyState">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                        Upload your shots list to begin.
-                    </div>
-                `;
-                
-                document.getElementById('exportBtn').style.display = 'none';
-                document.getElementById('toggleAllBtn').style.display = 'none';
-                document.getElementById('clearBtn').style.display = 'none';
-                document.getElementById('filterToggleBtn').style.display = 'none';
-
-                snEl.textContent = sceneNum;
-                slEl.textContent = LETTERS[letIdx];
-                tkEl.textContent = take;
-                prodInput.value = "Production Name";
-                charInput.value = "Cast";
-
-                document.getElementById('fileInput').value = '';
-                goToView('tracker');
-            }
+        window.clearLocalData = () => {
+            if (!confirm("Clear all data and reset?")) return;
+            localStorage.removeItem('productionApp_state');
+            excelData = []; sheetHeaders = []; mappedHeaders = {}; originalWorkbook = null;
+            currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
+            activeShotIndex = -1; sceneNum = 1; letIdx = 0; take = 1;
+            
+            document.getElementById('cardsContainer').innerHTML = `<div class="empty-state" id="emptyState"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>Upload your shots list to begin.</div>`;
+            ['exportBtn', 'toggleAllBtn', 'clearBtn', 'filterToggleBtn'].forEach(id => document.getElementById(id).style.display = 'none');
+            
+            snEl.textContent = sceneNum; slEl.textContent = LETTERS[letIdx]; tkEl.textContent = take;
+            prodInput.value = "Production Name"; charInput.value = "Cast";
+            document.getElementById('fileInput').value = '';
+            goToView('tracker');
         };
 
         // ==========================================
         // 3. TRACKER & EXCEL LOGIC
         // ==========================================
-        document.getElementById('fileInput').addEventListener('change', function(e) {
+        document.getElementById('fileInput').addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
-            
             outputFileName = file.name.replace(/\.[^/.]+$/, "") + "_Updated.xlsx";
 
             const reader = new FileReader();
-            reader.onload = function(event) {
-                const data = new Uint8Array(event.target.result);
-                originalWorkbook = XLSX.read(data, {type: 'array'});
-                
-                targetSheetName = originalWorkbook.SheetNames[0];
-                const shotSheet = originalWorkbook.SheetNames.find(name => name.toLowerCase().includes('shot'));
-                if (shotSheet) targetSheetName = shotSheet;
-
-                const worksheet = originalWorkbook.Sheets[targetSheetName];
-                const rawJson = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+            reader.onload = event => {
+                originalWorkbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
+                targetSheetName = originalWorkbook.SheetNames.find(n => n.toLowerCase().includes('shot')) || originalWorkbook.SheetNames[0];
+                const rawJson = XLSX.utils.sheet_to_json(originalWorkbook.Sheets[targetSheetName], {defval: ""});
                 
                 if (rawJson.length > 0) {
                     sheetHeaders = Object.keys(rawJson[0]);
                     mappedHeaders = mapHeaders(sheetHeaders);
                 }
-                
                 excelData = rawJson.filter(row => {
                     const firstVal = row[sheetHeaders[0]];
-                    if (firstVal === undefined || firstVal === null) return false;
-                    return String(firstVal).replace(/[- ]/g, '').length > 0;
+                    return firstVal != null && String(firstVal).replace(/[- ]/g, '').length > 0;
                 });
 
                 currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
                 document.getElementById('filterStatus').value = 'all';
                 document.getElementById('emptyState').style.display = 'none';
-                showTopButtons();
-                
-                saveState();
-                populateFilters();
-                renderCards();
+                showTopButtons(); saveState(); populateFilters(); renderCards();
             };
             reader.readAsArrayBuffer(file);
         });
@@ -757,53 +620,27 @@
         function populateFilters() {
             const scenes = new Set(), locations = new Set(), characters = new Set();
             excelData.forEach(row => {
-                const sceneNumPart = mappedHeaders.scene ? String(row[mappedHeaders.scene] || '').trim() : '';
-                const l = mappedHeaders.location ? String(row[mappedHeaders.location] || '').trim() : '';
-                const c = mappedHeaders.character ? String(row[mappedHeaders.character] || '').trim() : '';
-                
-                if(sceneNumPart && sceneNumPart !== '') scenes.add(sceneNumPart);
-                if(l && l !== '') locations.add(l);
-                if(c && c !== '') characters.add(c);
+                if(mappedHeaders.scene && row[mappedHeaders.scene]) scenes.add(String(row[mappedHeaders.scene]).trim());
+                if(mappedHeaders.location && row[mappedHeaders.location]) locations.add(String(row[mappedHeaders.location]).trim());
+                if(mappedHeaders.character && row[mappedHeaders.character]) characters.add(String(row[mappedHeaders.character]).trim());
             });
-
             fillDropdown('filterScene', Array.from(scenes).sort((a,b) => a.localeCompare(b, undefined, {numeric: true})));
             fillDropdown('filterLocation', Array.from(locations).sort());
             fillDropdown('filterCharacter', Array.from(characters).sort());
         }
 
         function fillDropdown(id, items) {
-            const select = document.getElementById(id);
-            const currentVal = select.value;
-            select.innerHTML = '<option value="all">All</option>';
-            items.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.toLowerCase(); opt.textContent = item;
-                select.appendChild(opt);
-            });
+            const select = document.getElementById(id), currentVal = select.value;
+            select.innerHTML = '<option value="all">All</option>' + items.map(i => `<option value="${i.toLowerCase()}">${i}</option>`).join('');
             if(Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal;
         }
 
-        function getNumberOptions(max, currentVal) {
-            let options = '<option value="">None</option>';
-            let found = false;
+        // Unified Options Generator for Takes & Sequences
+        function getOptions(max, currentVal, usedSet = null) {
+            let options = '<option value="">None</option>', found = false;
             for (let i = 1; i <= max; i++) {
-                const isSelected = (String(currentVal) === String(i)) ? 'selected' : '';
-                if (isSelected) found = true;
-                options += `<option value="${i}" ${isSelected}>${i}</option>`;
-            }
-            if (currentVal && !found && String(currentVal).trim() !== '') {
-                options += `<option value="${currentVal}" selected>${currentVal} (Custom)</option>`;
-            }
-            return options;
-        }
-
-        function getSequenceOptions(max, currentVal) {
-            let used = getUsedSequenceNumbers();
-            let options = '<option value="">None</option>';
-            let found = false;
-            for (let i = 1; i <= max; i++) {
-                const isSelected = (String(currentVal) === String(i)) ? 'selected' : '';
-                const isDisabled = (used.has(i) && !isSelected) ? 'disabled' : '';
+                const isSelected = String(currentVal) === String(i) ? 'selected' : '';
+                const isDisabled = usedSet?.has(i) && !isSelected ? 'disabled' : '';
                 if (isSelected) found = true;
                 options += `<option value="${i}" ${isSelected} ${isDisabled}>${i}</option>`;
             }
@@ -816,425 +653,229 @@
         function renderCards() {
             const container = document.getElementById('cardsContainer');
             container.innerHTML = ''; 
+            const frag = document.createDocumentFragment();
+            const usedSeqs = getUsedSequenceNumbers();
 
             excelData.forEach((row, index) => {
-                const code = mappedHeaders.code ? (row[mappedHeaders.code] || 'No Code') : 'No Code';
-                const sceneNumPart = mappedHeaders.scene ? String(row[mappedHeaders.scene] || '').trim() : '';
-                const sceneLetPart = mappedHeaders.shot ? String(row[mappedHeaders.shot] || '').trim() : '';
-                
-                const location = mappedHeaders.location ? String(row[mappedHeaders.location] || '').trim() : '';
-                const character = mappedHeaders.character ? String(row[mappedHeaders.character] || '').trim() : '';
-                
-                const frame = mappedHeaders.frame ? String(row[mappedHeaders.frame] || '') : '';
-                const angle = mappedHeaders.angle ? String(row[mappedHeaders.angle] || '') : '';
-                const shootType = mappedHeaders.type ? String(row[mappedHeaders.type] || '') : '';
-                const desc = mappedHeaders.description ? String(row[mappedHeaders.description] || '') : '';
-                const notes = mappedHeaders.notes ? String(row[mappedHeaders.notes] || '') : '';
-                
-                const currentTake = mappedHeaders.take ? String(row[mappedHeaders.take] || '') : '';
-                const status = mappedHeaders.status ? String(row[mappedHeaders.status] || '') : '';
-                const shootSequence = mappedHeaders.sequence ? String(row[mappedHeaders.sequence] || '') : '';
+                const v = key => mappedHeaders[key] ? String(row[mappedHeaders[key]] || '').trim() : '';
+                const code = v('code') || 'No Code', scene = v('scene'), shot = v('shot'), loc = v('location'), char = v('character');
+                const frame = v('frame'), angle = v('angle'), type = v('type'), desc = v('description'), notes = v('notes');
+                const takeVal = v('take'), status = v('status'), seq = v('sequence');
 
-                let statusClass = '';
-                if (status.toLowerCase() === 'done') statusClass = 'status-done';
-                if (status.toLowerCase() === 'pending') statusClass = 'status-pending';
-                if (status.toLowerCase() === 'skipped') statusClass = 'status-skipped';
+                const statusClass = status.toLowerCase() === 'done' ? 'status-done' : status.toLowerCase() === 'pending' ? 'status-pending' : status.toLowerCase() === 'skipped' ? 'status-skipped' : '';
+                const sceneBadge = shot ? `Scene: ${scene} | Shot: ${shot}` : (scene ? `Scene: ${scene}` : 'No Scene');
+                const faDisplay = (frame || angle) ? `${frame} ${frame && angle ? '/' : ''} ${angle}` : '';
 
                 const card = document.createElement('div');
                 card.className = `card collapsed ${statusClass}`;
                 card.id = `card-${index}`;
-                
-                card.setAttribute('data-scene-num', sceneNumPart.toLowerCase());
-                card.setAttribute('data-location', location.toLowerCase());
-                card.setAttribute('data-character', character.toLowerCase());
-                card.setAttribute('data-status', status.toLowerCase());
-
-                const sceneBadgeText = sceneLetPart ? `Scene: ${sceneNumPart} | Shot: ${sceneLetPart}` : (sceneNumPart ? `Scene: ${sceneNumPart}` : 'No Scene');
-                const frameAngleDisplay = (frame || angle) ? `${frame} ${frame && angle ? '/' : ''} ${angle}` : '';
+                card.dataset.sceneNum = scene.toLowerCase(); card.dataset.location = loc.toLowerCase();
+                card.dataset.character = char.toLowerCase(); card.dataset.status = status.toLowerCase();
 
                 card.innerHTML = `
                     <div class="card-header" onclick="toggleCard(${index})">
-                        <div class="card-header-left">
-                            <span class="code-title">${code}</span>
-                            <span class="scene-badge">${sceneBadgeText}</span>
-                        </div>
+                        <div class="card-header-left"><span class="code-title">${code}</span><span class="scene-badge">${sceneBadge}</span></div>
                         <span class="toggle-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
                     </div>
-                    
                     <div class="card-body">
                         <div class="info-grid">
-                            <div><span class="label">Character</span><span class="value">${character}</span></div>
-                            <div><span class="label">Location</span><span class="value">${location}</span></div>
-                            <div><span class="label">Type</span><span class="value">${shootType}</span></div>
-                            <div><span class="label">Frame/Angle</span><span class="value">${frameAngleDisplay}</span></div>
-                            
-                            <div class="info-full">
-                                <span class="label">Description</span>
-                                <div class="desc-text">${desc}</div>
-                            </div>
-                            
+                            <div><span class="label">Character</span><span class="value">${char}</span></div>
+                            <div><span class="label">Location</span><span class="value">${loc}</span></div>
+                            <div><span class="label">Type</span><span class="value">${type}</span></div>
+                            <div><span class="label">Frame/Angle</span><span class="value">${faDisplay}</span></div>
+                            <div class="info-full"><span class="label">Description</span><div class="desc-text">${desc}</div></div>
                             ${notes ? `<div class="info-full"><span class="label">Notes</span><div class="desc-text" style="color:var(--gold); border-color:var(--gold);">${notes}</div></div>` : ''}
                         </div>
-
                         <div class="card-footer">
                             <div class="input-section">
-                                <div class="input-group">
-                                    <label>Take</label>
-                                    <select id="take-sel-${index}" onchange="updateData(${index}, 'take', this.value)">
-                                        ${getNumberOptions(20, currentTake)}
-                                    </select>
-                                </div>
+                                <div class="input-group"><label>Take</label><select class="custom-select" id="take-sel-${index}" onchange="updateData(${index}, 'take', this.value)">${getOptions(20, takeVal)}</select></div>
                                 <div class="input-group">
                                     <label>Status</label>
-                                    <select id="status-sel-${index}" onchange="updateData(${index}, 'status', this.value)">
+                                    <select class="custom-select" id="status-sel-${index}" onchange="updateData(${index}, 'status', this.value)">
                                         <option value="" ${!status ? 'selected' : ''}>None</option>
-                                        <option value="Pending" ${status.toLowerCase() === 'pending' ? 'selected' : ''}>Pending</option>
-                                        <option value="Done" ${status.toLowerCase() === 'done' ? 'selected' : ''}>Done</option>
-                                        <option value="Skipped" ${status.toLowerCase() === 'skipped' ? 'selected' : ''}>Skipped</option>
+                                        ${['Pending', 'Done', 'Skipped'].map(s => `<option value="${s}" ${status.toLowerCase() === s.toLowerCase() ? 'selected' : ''}>${s}</option>`).join('')}
                                     </select>
                                 </div>
-                                <div class="input-group">
-                                    <label>Seq</label>
-                                    <select id="seq-sel-${index}" onchange="updateSequence(${index}, this.value)">
-                                        ${getSequenceOptions(100, shootSequence)}
-                                    </select>
-                                </div>
+                                <div class="input-group"><label>Seq</label><select class="custom-select" id="seq-sel-${index}" onchange="updateSequence(${index}, this.value)">${getOptions(100, seq, usedSeqs)}</select></div>
                             </div>
-                            <button class="send-slate-btn" onclick="sendToSlate(${index})" title="Send to Slate">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                            </button>
+                            <button class="send-slate-btn" onclick="sendToSlate(${index})" title="Send to Slate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
                         </div>
-                    </div>
-                `;
-                container.appendChild(card);
+                    </div>`;
+                frag.appendChild(card);
             });
-
+            container.appendChild(frag);
             if (excelData.length > 0) applyFilters(); 
         }
 
-        window.toggleCard = function(index) { document.getElementById(`card-${index}`).classList.toggle('collapsed'); };
-        window.toggleAllCards = function() {
+        window.toggleCard = idx => document.getElementById(`card-${idx}`).classList.toggle('collapsed');
+        window.toggleAllCards = () => {
             allExpanded = !allExpanded;
-            document.querySelectorAll('.card').forEach(card => allExpanded ? card.classList.remove('collapsed') : card.classList.add('collapsed'));
+            document.querySelectorAll('.card').forEach(c => c.classList.toggle('collapsed', !allExpanded));
         };
 
-        window.applyFilters = function() {
-            currentFilters.scene = document.getElementById('filterScene').value;
-            currentFilters.location = document.getElementById('filterLocation').value;
-            currentFilters.character = document.getElementById('filterCharacter').value;
-            currentFilters.status = document.getElementById('filterStatus').value;
-
+        window.applyFilters = () => {
+            ['Scene', 'Location', 'Character', 'Status'].forEach(f => currentFilters[f.toLowerCase()] = document.getElementById(`filter${f}`).value);
             document.querySelectorAll('.card').forEach(card => {
-                const cSceneNum = card.getAttribute('data-scene-num');
-                const cLoc = card.getAttribute('data-location');
-                const cChar = card.getAttribute('data-character');
-                const cStat = card.getAttribute('data-status');
-
-                const matchScene = (currentFilters.scene === 'all' || cSceneNum === currentFilters.scene);
-                const matchLoc = (currentFilters.location === 'all' || cLoc === currentFilters.location);
-                const matchChar = (currentFilters.character === 'all' || cChar === currentFilters.character);
-                const matchStat = (currentFilters.status === 'all' || cStat === currentFilters.status);
-
-                card.style.display = (matchScene && matchLoc && matchChar && matchStat) ? 'block' : 'none';
+                const { sceneNum, location, character, status } = card.dataset;
+                const match = (f, v) => currentFilters[f] === 'all' || v === currentFilters[f];
+                card.style.display = match('scene', sceneNum) && match('location', location) && match('character', character) && match('status', status) ? 'block' : 'none';
             });
             saveState(); 
         };
 
-        window.updateData = function(index, alias, value) {
-            let defaultNames = {
-                take: 'Take',
-                status: 'Status',
-                sequence: 'Shoot Sequence'
-            };
-            
-            let writeKey = getWriteKey(alias, defaultNames[alias] || alias);
-            excelData[index][writeKey] = value;
+        window.updateData = (idx, alias, val) => {
+            let defaults = { take: 'Take', status: 'Status', sequence: 'Shoot Sequence' };
+            excelData[idx][getWriteKey(alias, defaults[alias] || alias)] = val;
 
             if (alias === 'status') {
-                updateCardColor(index, value);
-                let seqWriteKey = getWriteKey('sequence', 'Shoot Sequence');
-                
-                if (value.toLowerCase() === 'done') {
-                    if (!excelData[index][seqWriteKey]) {
-                        let nextSeq = getNextSequenceNumber();
-                        excelData[index][seqWriteKey] = nextSeq;
-                        refreshAllSequenceDropdowns();
-                    }
-                } else {
-                    if (excelData[index][seqWriteKey]) {
-                        let oldSeq = excelData[index][seqWriteKey];
-                        excelData[index][seqWriteKey] = ""; 
-                        shiftSequencesDown(oldSeq);
-                        refreshAllSequenceDropdowns(); 
-                    }
+                updateCardColor(idx, val);
+                let seqKey = getWriteKey('sequence', 'Shoot Sequence');
+                if (val.toLowerCase() === 'done' && !excelData[idx][seqKey]) excelData[idx][seqKey] = getNextSequenceNumber();
+                else if (val.toLowerCase() !== 'done' && excelData[idx][seqKey]) {
+                    shiftSequencesDown(excelData[idx][seqKey]); excelData[idx][seqKey] = ""; 
                 }
+                refreshAllSequenceDropdowns();
             }
             saveState(); 
         };
 
-        window.updateSequence = function(index, value) {
-            let seqWriteKey = getWriteKey('sequence', 'Shoot Sequence');
-            let oldSeq = excelData[index][seqWriteKey];
-            
-            if (!value && oldSeq) {
-                excelData[index][seqWriteKey] = ""; 
-                shiftSequencesDown(oldSeq);
-            } else {
-                excelData[index][seqWriteKey] = value;
-            }
-            
-            saveState();
-            refreshAllSequenceDropdowns();
+        window.updateSequence = (idx, val) => {
+            let seqKey = getWriteKey('sequence', 'Shoot Sequence'), oldSeq = excelData[idx][seqKey];
+            if (!val && oldSeq) { excelData[idx][seqKey] = ""; shiftSequencesDown(oldSeq); }
+            else excelData[idx][seqKey] = val;
+            saveState(); refreshAllSequenceDropdowns();
         };
 
-        window.updateCardColor = function(index, statusValue) {
-            const card = document.getElementById(`card-${index}`);
-            card.setAttribute('data-status', statusValue.toLowerCase());
+        window.updateCardColor = (idx, status) => {
+            const card = document.getElementById(`card-${idx}`);
+            card.dataset.status = status.toLowerCase();
             card.classList.remove('status-done', 'status-pending', 'status-skipped');
-            if (statusValue === 'Done') card.classList.add('status-done');
-            if (statusValue === 'Pending') card.classList.add('status-pending');
-            if (statusValue === 'Skipped') card.classList.add('status-skipped');
+            if (status) card.classList.add(`status-${status.toLowerCase()}`);
         };
 
-        window.exportData = async function() {
-            // Using mapped keys strictly exports whatever is currently loaded in the memory state
-            const newWorksheet = XLSX.utils.json_to_sheet(excelData, {header: sheetHeaders});
-            let wb = originalWorkbook;
-            
-            if (wb) {
-                wb.Sheets[targetSheetName] = newWorksheet;
-            } else {
-                wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, newWorksheet, targetSheetName || "Updated Shots List");
-            }
+        window.exportData = async () => {
+            const newWs = XLSX.utils.json_to_sheet(excelData, {header: sheetHeaders});
+            let wb = originalWorkbook || XLSX.utils.book_new();
+            if (originalWorkbook) wb.Sheets[targetSheetName] = newWs;
+            else XLSX.utils.book_append_sheet(wb, newWs, targetSheetName || "Updated Shots List");
 
-            const excelMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
+            const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
             try {
-                const wboutArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                const blob = new Blob([wboutArray], { type: excelMimeType });
-                const file = new File([blob], outputFileName, { type: excelMimeType });
-
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Updated Shots List',
-                    });
-                    return; 
+                const blob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: mime });
+                if (navigator.canShare?.({ files: [new File([blob], outputFileName, { type: mime })] })) {
+                    await navigator.share({ files: [new File([blob], outputFileName, { type: mime })], title: 'Updated Shots List' }); return;
                 }
-            } catch (shareError) {
-                console.log("Share API unsupported or cancelled:", shareError);
-                if (shareError.name === 'AbortError') return; 
-            }
+            } catch (e) { if (e.name === 'AbortError') return; }
 
             try {
-                const wboutBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-                const base64Uri = "data:" + excelMimeType + ";base64," + wboutBase64;
                 const link = document.createElement("a");
-                link.href = base64Uri;
-                link.download = outputFileName;
-                
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => document.body.removeChild(link), 100);
-            } catch (fallbackError) {
-                console.error("Base64 failed, falling back to standard download.", fallbackError);
-                XLSX.writeFile(wb, outputFileName); 
-            }
+                link.href = "data:" + mime + ";base64," + XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+                link.download = outputFileName; document.body.appendChild(link); link.click(); link.remove();
+            } catch (e) { XLSX.writeFile(wb, outputFileName); }
         };
 
         // ==========================================
         // 4. THE BRIDGE: SEND TO SLATE
         // ==========================================
-        window.sendToSlate = function(index) {
-            activeShotIndex = index;
-            const shot = excelData[index];
-
+        window.sendToSlate = idx => {
+            activeShotIndex = idx; const shot = excelData[idx];
             let rawNum = mappedHeaders.scene ? String(shot[mappedHeaders.scene] || '1').trim() : '1';
             let rawLet = mappedHeaders.shot ? String(shot[mappedHeaders.shot] || '').trim() : '';
 
-            let numMatch = rawNum.match(/\d+/);
-            let letMatch = rawLet.match(/[A-Za-z]/);
-
-            let charVal = null;
-            if (letMatch) {
-                charVal = letMatch[0].toUpperCase();
-            }
-
-            if (numMatch) setSceneNum(parseInt(numMatch[0]), 'up', true);
-            else setSceneNum(1, 'up', true);
-
-            if (charVal && LETTERS.includes(charVal)) {
-                let lIdx = LETTERS.indexOf(charVal);
-                setSceneLet(lIdx, 'up', true);
-            } else {
-                setSceneLet(0, 'up', true);
-            }
+            let numMatch = rawNum.match(/\d+/), letMatch = rawLet.match(/[A-Za-z]/);
+            setSceneNum(numMatch ? parseInt(numMatch[0]) : 1, 'up', true);
+            setSceneLet(letMatch && LETTERS.includes(letMatch[0].toUpperCase()) ? LETTERS.indexOf(letMatch[0].toUpperCase()) : 0, 'up', true);
 
             charInput.value = mappedHeaders.character ? String(shot[mappedHeaders.character] || '').trim() : '';
-            let takeVal = mappedHeaders.take ? (parseInt(shot[mappedHeaders.take]) || 1) : 1;
-            setTake(takeVal, 'up', true);
+            setTake(mappedHeaders.take ? (parseInt(shot[mappedHeaders.take]) || 1) : 1, 'up', true);
 
-            saveState();
-            goToView('slate'); 
+            saveState(); goToView('slate'); 
         };
 
         // ==========================================
         // 5. SLATE & CLAPPER LOGIC
         // ==========================================
         const actx = new (window.AudioContext || window.webkitAudioContext)();
-        function resumeAudio(){ if(actx.state==='suspended') actx.resume(); }
+        const resumeAudio = () => actx.state === 'suspended' && actx.resume();
         document.addEventListener('pointerdown', resumeAudio, {once:true});
 
-        function playClap(){
-            resumeAudio();
-            const now = actx.currentTime;
-            const len = actx.sampleRate * 0.09;
-            const buf = actx.createBuffer(1,len,actx.sampleRate);
-            const d = buf.getChannelData(0);
+        function playClap() {
+            resumeAudio(); const now = actx.currentTime, len = actx.sampleRate * 0.09;
+            const buf = actx.createBuffer(1,len,actx.sampleRate), d = buf.getChannelData(0);
             for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(len*.13));
             const ns=actx.createBufferSource(); ns.buffer=buf;
             const hp=actx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1800;
             const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=3400; bp.Q.value=.8;
             const gn=actx.createGain(); gn.gain.setValueAtTime(1.5,now); gn.gain.exponentialRampToValueAtTime(.001,now+.13);
             ns.connect(hp); hp.connect(bp); bp.connect(gn); gn.connect(actx.destination); ns.start(now);
-            const osc=actx.createOscillator(); osc.type='sine';
-            osc.frequency.setValueAtTime(220,now); osc.frequency.exponentialRampToValueAtTime(55,now+.07);
+            const osc=actx.createOscillator(); osc.type='sine'; osc.frequency.setValueAtTime(220,now); osc.frequency.exponentialRampToValueAtTime(55,now+.07);
             const og=actx.createGain(); og.gain.setValueAtTime(.55,now); og.gain.exponentialRampToValueAtTime(.001,now+.1);
             osc.connect(og); og.connect(actx.destination); osc.start(now); osc.stop(now+.1);
         }
 
-        function tick(){
-            const d=new Date(),p=n=>String(n).padStart(2,'0');
-            document.getElementById('timecode').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-        }
-        tick(); setInterval(tick,1000);
-        const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        const nd=new Date();
-        document.getElementById('dateCell').textContent = `${String(nd.getDate()).padStart(2,'0')} ${MN[nd.getMonth()]} ${nd.getFullYear()}`;
+        const tick = () => document.getElementById('timecode').textContent = new Date().toTimeString().split(' ')[0];
+        tick(); setInterval(tick, 1000);
+        document.getElementById('dateCell').textContent = new Date().toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'});
 
-        function anim(el, cls){
-            el.classList.remove('going-up','going-down'); void el.offsetWidth; el.classList.add(cls);
-            el.addEventListener('animationend',()=>el.classList.remove('going-up','going-down'),{once:true});
-        }
+        function anim(el, cls){ el.classList.remove('going-up','going-down'); void el.offsetWidth; el.classList.add(cls); el.addEventListener('animationend',()=>el.classList.remove('going-up','going-down'),{once:true}); }
 
-        function setSceneNum(n, dir, isReset){
-            sceneNum=Math.max(1,Math.min(99,n)); snEl.textContent=sceneNum;
-            if(!isReset) anim(snEl, dir==='up' ? 'going-up' : 'going-down');
-            letIdx = 0; slEl.textContent = LETTERS[letIdx];
-            resetTakeQuiet(); saveState();
-        }
-        function setSceneLet(i, dir, isReset){
-            letIdx=((i%LETTERS.length)+LETTERS.length)%LETTERS.length; slEl.textContent=LETTERS[letIdx];
-            if(!isReset) anim(slEl, dir==='up' ? 'going-up' : 'going-down');
-            resetTakeQuiet(); saveState();
-        }
-        function setTake(n, dir, isReset){
-            take=Math.max(1,n); tkEl.textContent=take;
-            if(!isReset) anim(tkEl, dir==='up' ? 'going-up' : 'going-down');
-            saveState();
-        }
-        function resetTakeQuiet(){ take=1; tkEl.textContent=1; }
+        const setSceneNum = (n, dir, rst) => { sceneNum=Math.max(1,Math.min(99,n)); snEl.textContent=sceneNum; if(!rst) anim(snEl, dir==='up'?'going-up':'going-down'); letIdx=0; slEl.textContent=LETTERS[0]; resetTakeQuiet(); saveState(); };
+        const setSceneLet = (i, dir, rst) => { letIdx=((i%LETTERS.length)+LETTERS.length)%LETTERS.length; slEl.textContent=LETTERS[letIdx]; if(!rst) anim(slEl, dir==='up'?'going-up':'going-down'); resetTakeQuiet(); saveState(); };
+        const setTake = (n, dir, rst) => { take=Math.max(1,n); tkEl.textContent=take; if(!rst) anim(tkEl, dir==='up'?'going-up':'going-down'); saveState(); };
+        const resetTakeQuiet = () => { take=1; tkEl.textContent=1; };
 
-        document.getElementById('snUp').addEventListener('click',   ()=>setSceneNum(sceneNum+1,'up',false));
-        document.getElementById('snDown').addEventListener('click', ()=>setSceneNum(sceneNum-1,'down',false));
-        document.getElementById('slUp').addEventListener('click',   ()=>setSceneLet(letIdx+1,'up',false));
-        document.getElementById('slDown').addEventListener('click', ()=>setSceneLet(letIdx-1,'down',false));
-        document.getElementById('tkUp').addEventListener('click',   ()=>setTake(take+1,'up',false));
-        document.getElementById('tkDown').addEventListener('click', ()=>setTake(take-1,'down',false));
+        ['snUp','snDown','slUp','slDown','tkUp','tkDown'].forEach((id, i) => document.getElementById(id).addEventListener('click', [
+            ()=>setSceneNum(sceneNum+1,'up'), ()=>setSceneNum(sceneNum-1,'down'),
+            ()=>setSceneLet(letIdx+1,'up'), ()=>setSceneLet(letIdx-1,'down'),
+            ()=>setTake(take+1,'up'), ()=>setTake(take-1,'down')
+        ][i]));
 
         function makeSwipeable(el, onUp, onDown, onReset){
-            let startPos=null, moved=false, lastStep=0, lastTap=0;
-            const THRESH=28, COOLDOWN=160, DBL_TAP_DELAY=300;
+            let startPos=null, lastStep=0, lastTap=0;
+            const getPos = e => (window.innerHeight > window.innerWidth) ? -(e.touches ? e.touches[0] : e).clientX : (e.touches ? e.touches[0] : e).clientY;
+            const onStart = e => { if(e.target.closest('.step-btn')) return; const now=Date.now(); if(now-lastTap<300){onReset();lastTap=0;startPos=null;return;} lastTap=now; startPos=getPos(e); };
+            const onMove = e => { if(startPos===null) return; const dy=startPos-getPos(e); if(Math.abs(dy)<28) return; const now=Date.now(); if(now-lastStep<160) return; lastStep=now; if(dy>0)onUp(); else onDown(); startPos=getPos(e); };
+            const onEnd = () => startPos=null;
 
-            function getPos(e) {
-                const isPortrait = window.innerHeight > window.innerWidth;
-                const touch = e.touches ? e.touches[0] : e;
-                return isPortrait ? -touch.clientX : touch.clientY;
-            }
-
-            function onStart(e){
-                if(e.target.closest('.step-btn')) return;
-                const now = Date.now();
-                if (now - lastTap < DBL_TAP_DELAY) { onReset(); lastTap = 0; startPos = null; return; }
-                lastTap = now; startPos=getPos(e); moved=false;
-            }
-            function onMove(e){
-                if(startPos===null) return;
-                const dy=startPos-getPos(e);
-                if(Math.abs(dy)<THRESH) return;
-                const now=Date.now();
-                if(now-lastStep < COOLDOWN) return;
-                moved=true; lastStep=now;
-                if(dy>0){ onUp(); startPos=getPos(e); } else { onDown(); startPos=getPos(e); }
-            }
-            function onEnd(){ startPos=null; moved=false; }
-
-            el.addEventListener('touchstart',e=>{e.preventDefault();onStart(e);},{passive:false});
-            el.addEventListener('touchmove', e=>{e.preventDefault();onMove(e);},{passive:false});
-            el.addEventListener('touchend',  e=>{e.preventDefault();onEnd();},{passive:false});
-            el.addEventListener('mousedown', e=>onStart(e));
-            window.addEventListener('mousemove',e=>{if(startPos!==null)onMove(e);});
-            window.addEventListener('mouseup', ()=>{if(startPos!==null)onEnd();});
+            ['touchstart','touchmove','touchend'].forEach(evt => el.addEventListener(evt, e=>{e.preventDefault(); (evt==='touchstart'?onStart:evt==='touchmove'?onMove:onEnd)(e);}, {passive:false}));
+            el.addEventListener('mousedown', onStart); window.addEventListener('mousemove', e=>{if(startPos!==null)onMove(e);}); window.addEventListener('mouseup', ()=>{if(startPos!==null)onEnd();});
         }
-        makeSwipeable(snEl, ()=>setSceneNum(sceneNum+1,'up',false), ()=>setSceneNum(sceneNum-1,'down',false), ()=>setSceneNum(1,'up',true));
-        makeSwipeable(slEl, ()=>setSceneLet(letIdx+1,'up',false), ()=>setSceneLet(letIdx-1,'down',false), ()=>setSceneLet(0,'up',true));
-        makeSwipeable(tkEl, ()=>setTake(take+1,'up',false), ()=>setTake(take-1,'down',false), ()=>setTake(1,'up',true));
+        makeSwipeable(snEl, ()=>setSceneNum(sceneNum+1,'up'), ()=>setSceneNum(sceneNum-1,'down'), ()=>setSceneNum(1,'up',true));
+        makeSwipeable(slEl, ()=>setSceneLet(letIdx+1,'up'), ()=>setSceneLet(letIdx-1,'down'), ()=>setSceneLet(0,'up',true));
+        makeSwipeable(tkEl, ()=>setTake(take+1,'up'), ()=>setTake(take-1,'down'), ()=>setTake(1,'up',true));
 
-        function doClap(){
+        function doClap() {
             playClap();
-            
             if (activeShotIndex !== -1 && excelData[activeShotIndex]) {
-                const currentTakeToSave = take; 
+                const sqKey = getWriteKey('sequence', 'Shoot Sequence');
+                excelData[activeShotIndex][getWriteKey('take', 'Take')] = take;
+                excelData[activeShotIndex][getWriteKey('status', 'Status')] = 'Done';
+                if (!excelData[activeShotIndex][sqKey]) excelData[activeShotIndex][sqKey] = getNextSequenceNumber();
                 
-                let tkWriteKey = getWriteKey('take', 'Take');
-                let stWriteKey = getWriteKey('status', 'Status');
-                let sqWriteKey = getWriteKey('sequence', 'Shoot Sequence');
+                if (document.getElementById(`take-sel-${activeShotIndex}`)) document.getElementById(`take-sel-${activeShotIndex}`).value = take;
+                if (document.getElementById(`status-sel-${activeShotIndex}`)) document.getElementById(`status-sel-${activeShotIndex}`).value = 'Done';
                 
-                excelData[activeShotIndex][tkWriteKey] = currentTakeToSave;
-                excelData[activeShotIndex][stWriteKey] = 'Done';
-                
-                if (!excelData[activeShotIndex][sqWriteKey]) {
-                    let nextSeq = getNextSequenceNumber();
-                    excelData[activeShotIndex][sqWriteKey] = nextSeq;
-                }
-                
-                const tkDrop = document.getElementById(`take-sel-${activeShotIndex}`);
-                const stDrop = document.getElementById(`status-sel-${activeShotIndex}`);
-                if (tkDrop) tkDrop.value = currentTakeToSave;
-                if (stDrop) stDrop.value = 'Done';
-                
-                updateCardColor(activeShotIndex, 'Done');
-                refreshAllSequenceDropdowns();
+                updateCardColor(activeShotIndex, 'Done'); refreshAllSequenceDropdowns();
             }
-
             const top=document.getElementById('clapperTop'), fl=document.getElementById('flash');
             top.classList.remove('clapping'); void top.offsetWidth; top.classList.add('clapping');
-            top.addEventListener('animationend',()=>top.classList.remove('clapping'),{once:true});
             fl.classList.remove('active'); void fl.offsetWidth; fl.classList.add('active');
-            fl.addEventListener('animationend',()=>fl.classList.remove('active'),{once:true});
-            
             saveState(); 
         }
         document.getElementById('markBtn').addEventListener('click', doClap);
         document.getElementById('clapperTop').addEventListener('click', doClap);
 
-        const moonPath = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>`;
-        const sunPaths = `<circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22"/><line x1="2" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.8" y2="6.8"/><line x1="17.2" y1="17.2" x2="19.1" y2="19.1"/><line x1="19.1" y1="4.9" x2="17.2" y2="6.8"/><line x1="6.8" y1="17.2" x2="4.9" y2="19.1"/></g>`;
+        const updateThemeIcon = () => {
+            document.getElementById('themeIcon').innerHTML = document.documentElement.getAttribute('data-theme')==='dark' 
+                ? `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>` 
+                : `<circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22"/><line x1="2" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.8" y2="6.8"/><line x1="17.2" y1="17.2" x2="19.1" y2="19.1"/><line x1="19.1" y1="4.9" x2="17.2" y2="6.8"/><line x1="6.8" y1="17.2" x2="4.9" y2="19.1"/></g>`;
+            document.getElementById('themeIcon').style.color = 'var(--gold)';
+        };
 
-        function updateThemeIcon(){
-            const isDark = document.documentElement.getAttribute('data-theme')==='dark';
-            const ico = document.getElementById('themeIcon');
-            ico.style.color = 'var(--gold)';
-            ico.innerHTML = isDark ? moonPath : sunPaths;
-        }
-
-        document.getElementById('themeBtn').addEventListener('click',()=>{
-            const html=document.documentElement;
-            html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+        document.getElementById('themeBtn').addEventListener('click', () => {
+            const html=document.documentElement; html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
             updateThemeIcon(); saveState();
         });
-
     </script>
 </body>
 </html>

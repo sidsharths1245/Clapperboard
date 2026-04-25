@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Production Slate & Tracker</title>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -429,7 +429,7 @@
         // ==========================================
         let excelData = [], sheetHeaders = [], mappedHeaders = {}; 
         let outputFileName = "Updated_Shots_List.xlsx", targetSheetName = "";
-        let originalWorkbook = null, allExpanded = false, activeShotIndex = -1; 
+        let originalWorkbook = null, targetSheet = null, allExpanded = false, activeShotIndex = -1; 
         
         let currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
 
@@ -467,11 +467,14 @@
             return map;
         }
 
-        // Guarantees we have a valid key to write to
+        // Guarantees we have a valid key to write to (Updated for ExcelJS)
         function getWriteKey(fieldAlias, defaultName) {
             if (mappedHeaders[fieldAlias]) return mappedHeaders[fieldAlias];
             mappedHeaders[fieldAlias] = defaultName;
-            if (!sheetHeaders.includes(defaultName)) sheetHeaders.push(defaultName);
+            if (!sheetHeaders.includes(defaultName)) {
+                sheetHeaders.push(defaultName);
+                if (targetSheet) targetSheet.getRow(1).getCell(sheetHeaders.length).value = defaultName;
+            }
             return defaultName;
         }
 
@@ -573,7 +576,7 @@
         window.clearLocalData = () => {
             if (!confirm("Clear all data and reset?")) return;
             localStorage.removeItem('productionApp_state');
-            excelData = []; sheetHeaders = []; mappedHeaders = {}; originalWorkbook = null;
+            excelData = []; sheetHeaders = []; mappedHeaders = {}; originalWorkbook = null; targetSheet = null;
             currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
             activeShotIndex = -1; sceneNum = 1; letIdx = 0; take = 1;
             
@@ -587,34 +590,55 @@
         };
 
         // ==========================================
-        // 3. TRACKER & EXCEL LOGIC
+        // 3. TRACKER & EXCEL LOGIC (Updated to ExcelJS)
         // ==========================================
-        document.getElementById('fileInput').addEventListener('change', e => {
+        document.getElementById('fileInput').addEventListener('change', async e => {
             const file = e.target.files[0];
             if (!file) return;
             outputFileName = file.name.replace(/\.[^/.]+$/, "") + "_Updated.xlsx";
 
-            const reader = new FileReader();
-            reader.onload = event => {
-                originalWorkbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
-                targetSheetName = originalWorkbook.SheetNames.find(n => n.toLowerCase().includes('shot')) || originalWorkbook.SheetNames[0];
-                const rawJson = XLSX.utils.sheet_to_json(originalWorkbook.Sheets[targetSheetName], {defval: ""});
-                
-                if (rawJson.length > 0) {
-                    sheetHeaders = Object.keys(rawJson[0]);
-                    mappedHeaders = mapHeaders(sheetHeaders);
-                }
-                excelData = rawJson.filter(row => {
-                    const firstVal = row[sheetHeaders[0]];
-                    return firstVal != null && String(firstVal).replace(/[- ]/g, '').length > 0;
+            // Load file into ExcelJS
+            originalWorkbook = new ExcelJS.Workbook();
+            const arrayBuffer = await file.arrayBuffer();
+            await originalWorkbook.xlsx.load(arrayBuffer);
+
+            // Get the target worksheet
+            targetSheetName = originalWorkbook.worksheets.find(ws => ws.name.toLowerCase().includes('shot'))?.name || originalWorkbook.worksheets[0].name;
+            targetSheet = originalWorkbook.getWorksheet(targetSheetName);
+
+            sheetHeaders = [];
+            const firstRow = targetSheet.getRow(1);
+            firstRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+                sheetHeaders[colNumber - 1] = cell.value ? cell.value.toString() : `Col${colNumber}`;
+            });
+            
+            // Clean up empty gaps in header array
+            sheetHeaders = Array.from(sheetHeaders, v => v || "");
+            mappedHeaders = mapHeaders(sheetHeaders);
+
+            excelData = [];
+            targetSheet.eachRow((row, rowNumber) => {
+                if (rowNumber === 1) return; // Skip header
+                let rowData = { _rowNumber: rowNumber }; // Track original row to preserve styles
+                let isEmpty = true;
+
+                sheetHeaders.forEach((header, index) => {
+                    if(!header) return;
+                    let cell = row.getCell(index + 1);
+                    // Extract value safely, grabbing text instead of deep formatting objects
+                    let val = cell.text || (cell.value ? cell.value.toString() : "");
+                    rowData[header] = val;
+                    if (index === 0 && val.replace(/[- ]/g, '').length > 0) isEmpty = false;
                 });
 
-                currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
-                document.getElementById('filterStatus').value = 'all';
-                document.getElementById('emptyState').style.display = 'none';
-                showTopButtons(); saveState(); populateFilters(); renderCards();
-            };
-            reader.readAsArrayBuffer(file);
+                if (!isEmpty) excelData.push(rowData);
+            });
+
+            currentFilters = { scene: 'all', location: 'all', character: 'all', status: 'all' };
+            document.getElementById('filterStatus').value = 'all';
+            document.getElementById('emptyState').style.display = 'none';
+            showTopButtons(); saveState(); populateFilters(); renderCards();
+            document.getElementById('fileInput').value = ''; // Reset input
         });
 
         function populateFilters() {
@@ -753,25 +777,97 @@
             if (status) card.classList.add(`status-${status.toLowerCase()}`);
         };
 
+        // ==========================================
+        // HYBRID EXPORT (WITH WEBVIEW FALLBACKS & FORMULA FIX)
+        // ==========================================
         window.exportData = async () => {
-            const newWs = XLSX.utils.json_to_sheet(excelData, {header: sheetHeaders});
-            let wb = originalWorkbook || XLSX.utils.book_new();
-            if (originalWorkbook) wb.Sheets[targetSheetName] = newWs;
-            else XLSX.utils.book_append_sheet(wb, newWs, targetSheetName || "Updated Shots List");
-
-            const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
             try {
-                const blob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: mime });
-                if (navigator.canShare?.({ files: [new File([blob], outputFileName, { type: mime })] })) {
-                    await navigator.share({ files: [new File([blob], outputFileName, { type: mime })], title: 'Updated Shots List' }); return;
+                // Fallback: Recreate basic workbook from localStorage if needed
+                if (!originalWorkbook || !targetSheet) {
+                    originalWorkbook = new ExcelJS.Workbook();
+                    targetSheet = originalWorkbook.addWorksheet(targetSheetName || "Updated Shots");
+                    targetSheet.addRow(sheetHeaders);
+                    excelData.forEach((row, i) => {
+                        row._rowNumber = i + 2;
+                        targetSheet.addRow(sheetHeaders.map(h => row[h] || ""));
+                    });
                 }
-            } catch (e) { if (e.name === 'AbortError') return; }
 
-            try {
-                const link = document.createElement("a");
-                link.href = "data:" + mime + ";base64," + XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-                link.download = outputFileName; document.body.appendChild(link); link.click(); link.remove();
-            } catch (e) { XLSX.writeFile(wb, outputFileName); }
+                // Get exactly which columns our app is allowed to modify
+                const activeKeys = [
+                    mappedHeaders.take,
+                    mappedHeaders.status,
+                    mappedHeaders.sequence
+                ].filter(Boolean);
+
+                // Sync modified data back into the exact cells of the styled worksheet
+                excelData.forEach(row => {
+                    if (!row._rowNumber) return;
+                    const excelRow = targetSheet.getRow(row._rowNumber);
+                    
+                    sheetHeaders.forEach((header, index) => {
+                        if(!header) return;
+                        
+                        // BUGFIX: Only overwrite the cell if it's a field our app actively changes.
+                        // This prevents ExcelJS from corrupting "Shared Formulas" in untouched columns.
+                        if (activeKeys.includes(header)) {
+                            excelRow.getCell(index + 1).value = row[header] || "";
+                        }
+                    });
+                    excelRow.commit();
+                });
+
+                // Prepare file buffer and Blob
+                const buffer = await originalWorkbook.xlsx.writeBuffer();
+                const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                const blob = new Blob([buffer], { type: mime });
+                const fileName = outputFileName || "Updated_Shots_List.xlsx";
+                const file = new File([blob], fileName, { type: mime });
+
+                // STRATEGY 1: Native OS Share (Best for Mobile, if permissions allow)
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({ files: [file], title: 'Updated Shots List' });
+                        return; // Stop if successful
+                    } catch (shareError) {
+                        if (shareError.name === 'AbortError') return; // User cancelled, do nothing
+                        console.log("Share API failed, moving to Strategy 2...", shareError);
+                    }
+                }
+
+                // STRATEGY 2: Standard Browser Download (Fails in many App WebViews)
+                try {
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+                    link.href = url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    setTimeout(() => { link.remove(); URL.revokeObjectURL(url); }, 200);
+                    return; // Stop if successful
+                } catch (blobError) {
+                    console.log("Blob download failed, moving to Strategy 3...", blobError);
+                }
+
+                // STRATEGY 3: Base64 Data URI Download (Bypasses Blob restrictions in strict WebViews)
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const link = document.createElement("a");
+                    link.href = reader.result;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    setTimeout(() => link.remove(), 200);
+                };
+                reader.onerror = function(e) {
+                    throw new Error("Could not read file data for fallback export.");
+                };
+                reader.readAsDataURL(blob);
+
+            } catch (e) {
+                console.error("Export failed:", e);
+                alert("Export blocked by App Wrapper: \n" + e.message + "\n\nTry opening the app in a standard browser (Chrome/Safari) to download.");
+            }
         };
 
         // ==========================================
